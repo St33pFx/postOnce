@@ -62,6 +62,26 @@ Cuando una publicación falle, la aplicación debe mostrar un estado y un mensaj
 
 La aplicación debe mostrar el resultado final de cada plataforma seleccionada.
 
+## Approved reliability rules (2026-09-15)
+
+- Los estados y batches se persisten y sobreviven al cierre de la aplicación.
+- `UnknownOutcome` no es éxito ni fallo; nunca admite retry automático.
+- Solo se reconcilia mediante mecanismos reales disponibles; sin certeza se bloquean
+  acciones que puedan duplicar la publicación.
+- Publicación confirmada + fallo secundario = `PublishedWithWarning`, no `Failed`.
+  Si la operación secundaria es repetible independientemente, solo se reintenta esa.
+- El diagrama siguiente describe únicamente el camino principal con resultado conocido.
+  La pérdida de confirmación desde Uploading/Processing conduce a UnknownOutcome.
+
+### Acceptance additions
+
+- GIVEN un resultado remoto incierto, WHEN se solicita retry, THEN no se publica de
+  nuevo y no se convierte a éxito/fallo sin evidencia real de reconciliación.
+- GIVEN video publicado y thumbnail fallida, THEN PublishedWithWarning; WHEN la
+  thumbnail admite retry independiente, THEN solo se repite la thumbnail.
+- GIVEN estados persistidos, WHEN se reabre la aplicación, THEN se recuperan sin
+  iniciar otra publicación.
+
 ## State Model
 
 ```text
@@ -290,7 +310,7 @@ las plataformas fallidas mantienen su acción de retry
 ## Open Questions
 
 - ¿La V1 permitirá cancelar una publicación que ya comenzó?
-- ¿Los estados de publicación deben sobrevivir al cierre y reapertura de la aplicación?
+- Resuelto: los estados sobreviven al cierre y reapertura de la aplicación.
 - ¿Cuánto tiempo esperará la aplicación antes de considerar que una plataforma está tardando demasiado?
 - ¿Qué UX tendrá el estado `Unknown outcome` para evitar duplicados?
 - ¿Se añadirá un botón `Retry all failed` o únicamente retry individual en V1?

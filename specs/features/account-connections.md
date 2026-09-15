@@ -58,7 +58,8 @@ La aplicación debe impedir que una cuenta no compatible con la API de publicaci
 
 ### TikTok
 
-- La cuenta debe autorizar el scope requerido para Direct Post.
+- TikTok es obligatorio; el mecanismo real se decide en un technical spike, no necesariamente Direct Post.
+- Si se elige Direct Post, la cuenta debe autorizar su scope requerido. Otra integración real debe verificar sus mecanismos oficiales y permisos, sin simular conexión o éxito.
 - Las capacidades disponibles pueden depender de la cuenta y deben consultarse mediante la información actual del creador antes de publicar.
 
 ### YouTube

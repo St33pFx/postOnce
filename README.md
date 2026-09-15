@@ -1,4 +1,4 @@
-﻿# PostOnce
+# PostOnce
 
 PostOnce es una aplicación web responsive para preparar y publicar un mismo video corto en múltiples plataformas desde un solo lugar.
 
@@ -18,7 +18,7 @@ La V1 contempla:
 
 ## Estado del proyecto
 
-El proyecto se encuentra en fase de discovery y diseño. La especificación funcional se mantiene en `specs/` y debe aprobarse antes de definir arquitectura, seleccionar el stack tecnológico o comenzar la implementación.
+La arquitectura y el stack de V1 están aprobados. El desarrollo se ejecuta por fases según `specs/implementation-plan.md`; la especificación funcional se mantiene en `specs/`.
 
 ## Spec-Driven Development
 
@@ -34,7 +34,7 @@ PostOnce es también un proyecto de aprendizaje de **Spec-Driven Development**. 
 
 ## Alcance actual
 
-La V1 está orientada a una audiencia amplia. Esto no implica todavía una decisión sobre si PostOnce será una aplicación alojada centralmente, un proyecto open source desplegable por cada usuario o un modelo híbrido. Esa decisión se resolverá durante el diseño de arquitectura.
+V1 es una aplicación centralmente alojada y accesible públicamente. El código es open source; self-hosting queda para una etapa posterior.
 
 No forman parte de la V1 analytics, scheduling, generación de captions o hashtags mediante IA, edición completa de video, calendario editorial ni gestión de equipos, roles u organizaciones.
 

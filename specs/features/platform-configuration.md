@@ -1,5 +1,7 @@
 # Feature: Platform Configuration
 
+> Aclaración aprobada 2026-09-15: las reglas de TikTok Direct Post son condicionales a elegir ese mecanismo. TikTok sigue siendo obligatorio; el spike verificará las capacidades reales antes de ofrecer controles.
+
 > Estado: draft para revisión.  
 > Base factual: `../research/platform-capabilities.md`, verificada el 2026-09-14.
 
