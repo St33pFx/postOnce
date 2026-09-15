@@ -8,6 +8,20 @@
       "when": 1789457054936,
       "tag": "0000_huge_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789460538934,
+      "tag": "0001_tense_bromley",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789461444258,
+      "tag": "0002_smart_tempest",
+      "breakpoints": true
     }
   ]
 }

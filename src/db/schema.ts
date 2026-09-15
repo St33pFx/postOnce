@@ -1,8 +1,11 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { user } from "./auth-schema";
+export { user, session, account, verification } from "./auth-schema";
 
 /** Identity anchor; Better Auth's schema is intentionally added in Phase 2. */
 export const postonceUsers = pgTable("postonce_users", {
   id: uuid("id").defaultRandom().primaryKey(),
+  authUserId: text("auth_user_id").unique().references(() => user.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -13,4 +16,4 @@ export const drafts = pgTable("drafts", {
   caption: text("caption"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-}, (table) => [index("drafts_user_id_idx").on(table.userId)]);
+}, (table) => [index("drafts_user_id_idx").on(table.userId), unique("draft_owner_identity").on(table.id, table.userId)]);

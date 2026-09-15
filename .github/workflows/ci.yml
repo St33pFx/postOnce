@@ -1,4 +1,4 @@
-name: Foundation checks
+name: Phase 1 and 2 checks
 on: [push, pull_request]
 permissions:
   contents: read
@@ -30,6 +30,8 @@ jobs:
       - run: npm run check
       - run: npm run db:generate && git diff --exit-code -- src/db/migrations
       - run: npm run test:postgres
+      # Known moderate esbuild development-server advisory is documented in docs/phase-2-setup.md.
+      - run: npm audit --omit=dev --audit-level=high
       - name: Production HTTP smoke (unconfigured DB must not be ready)
         run: |
           npm start > /tmp/postonce.log 2>&1 &

@@ -24,10 +24,22 @@ async function main() {
       await assert.rejects(client.query("DELETE FROM postonce_users WHERE id=$1", [user.rows[0].id]),
         (error: unknown) => (error as { code: string }).code === "23503");
       await client.query("ROLLBACK TO SAVEPOINT deletion");
+      await client.query("INSERT INTO connected_accounts (user_id, platform, remote_account_id, status) VALUES ($1, 'youtube', 'test-channel', 'connected')", [user.rows[0].id]);
+      await client.query("SAVEPOINT cardinality");
+      await assert.rejects(client.query("INSERT INTO connected_accounts (user_id, platform, remote_account_id, status) VALUES ($1, 'youtube', 'another', 'connected')", [user.rows[0].id]),
+        (error: unknown) => (error as { code: string }).code === "23505");
+      await client.query("ROLLBACK TO SAVEPOINT cardinality");
+      const other = await client.query("INSERT INTO postonce_users DEFAULT VALUES RETURNING id");
+      const otherConnection = await client.query("INSERT INTO connected_accounts (user_id, platform, remote_account_id, status) VALUES ($1, 'youtube', 'other-owner', 'connected') RETURNING id", [other.rows[0].id]);
+      await client.query("SAVEPOINT binding_owner");
+      await assert.rejects(client.query("INSERT INTO draft_connection_bindings (draft_id, user_id, platform, connection_id, confirmed_revision) VALUES ($1, $2, 'youtube', $3, 1)",
+        [draft.rows[0].id, other.rows[0].id, otherConnection.rows[0].id]),
+      (error: unknown) => (error as { code: string }).code === "23503");
+      await client.query("ROLLBACK TO SAVEPOINT binding_owner");
       await client.query("ROLLBACK");
       const rolledBack = await client.query("SELECT id FROM drafts WHERE id=$1", [draft.rows[0].id]);
       assert.equal(rolledBack.rowCount, 0);
-      console.log("PostgreSQL: migrations, insert, FK, deletion guard and rollback passed.");
+      console.log("PostgreSQL: migrations, insert, FK, deletion guard, connection cardinality, binding ownership and rollback passed.");
     } finally {
       await client.query("ROLLBACK");
       client.release();
