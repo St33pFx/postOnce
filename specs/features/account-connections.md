@@ -14,6 +14,13 @@ Permitir al usuario autorizar las cuentas necesarias para publicar contenido en 
 
 ## V1 Constraints
 
+Decisiones aprobadas para Phase 2:
+- PostOnce es multiusuario; cada usuario tiene como máximo una cuenta activa por plataforma.
+- El login de PostOnce es Google Sign-In mediante Better Auth, solo identidad; no solicita scopes de YouTube.
+- Las cuentas OAuth de plataformas son independientes del proveedor de login.
+- Una reconexión con otro remote account ID conserva la identidad/historial anterior;
+  los destinos preparados requieren confirmación explícita y revalidación antes de utilizarla.
+
 - La aplicación utilizará los mecanismos oficiales de autorización de cada plataforma.
 - La aplicación no solicitará la contraseña de Instagram, TikTok o YouTube.
 - Una plataforma no podrá utilizarse para publicar mientras su autorización no sea válida.
@@ -200,7 +207,7 @@ se muestra el motivo conocido de la incompatibilidad
 
 ## Open Questions
 
-- ¿La V1 permitirá una sola cuenta conectada por plataforma o varias?
+- Resuelto: una cuenta activa por plataforma por usuario, garantizada en PostgreSQL.
 - ¿Dónde se mostrará la administración de cuentas: pantalla propia, Settings o dentro de Create Post?
 - ¿Qué información mínima de la cuenta se mostrará para identificarla: nombre, username, avatar o canal?
-- ¿Qué estrategia de almacenamiento seguro de tokens se utilizará? Esta decisión pertenece al plan técnico.
+- Resuelto en Phase 2: AES-256-GCM con AAD por usuario/plataforma/identidad y claves versionadas fuera de PostgreSQL; ver `../phase-2.md` y `../../docs/phase-2-setup.md`.

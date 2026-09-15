@@ -13,6 +13,7 @@ Actualizado: 2026-09-15. Arquitectura aprobada; desarrollo por fases.
 - `research/platform-capabilities.md`: investigación externa; revalidar al integrar.
 - `architecture.md`: arquitectura aprobada y decisiones técnicas.
 - `implementation-plan.md`: milestones y condiciones de salida.
+- `phase-2.md`: decisiones aprobadas y alcance de identidad/conexiones.
 
 Las decisiones aprobadas el 2026-09-15 se registran en arquitectura y specs afectadas.
 Las preguntas de producto restantes NO se consideran resueltas por aprobar el stack:
@@ -22,4 +23,4 @@ Spec → decisiones abiertas → arquitectura → plan → implementación incre
 verificación contra constitution/specs → commit → push del milestone estable.
 
 Phase 1 entrega cimientos, no una V1 lista para uso público.
-No continuar con Phase 2 sin aprobación explícita.
+Phase 2 fue aprobada; no continuar con Phase 3 sin aprobación explícita.

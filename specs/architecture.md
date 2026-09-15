@@ -53,8 +53,9 @@ effects; safe maintenance jobs may retry. Batch creation and enqueue must be ato
 | Auth.js / next-auth 4.24.15; v5 beta | Established OAuth/session alternative; stable v4 and beta v5 split adds migration choices without a clear benefit for this new project. |
 | Managed external identity | Viable, but adds a provider/data boundary not required for this baseline. |
 
-Selection does not decide product sign-in methods. Phase 2 must resolve those before
-exposing login. No password hashing, password endpoints or auth tables are hand-built.
+Phase 2 product approval selects Google-only sign-in, with no YouTube scopes, and one
+active platform account per platform per user. See `phase-2.md`. No password hashing
+or password endpoints are hand-built; auth tables follow Better Auth's standard schema.
 The initial `postonce_users` anchor is distinct from future auth-library tables and
 from platform accounts. Recheck security advisories and APIs before installing auth.
 
@@ -83,9 +84,15 @@ S3 buckets remain private; short-lived signed access is owner-authorized. Worker
 processing is bounded and outside HTTP requests. Retention, quotas and upload limits
 remain product questions for Phase 3. Logs must redact credentials and user content.
 
-Phase 1 stores identity anchors and draft ownership/caption only. Connections, media,
+Phase 1 stored identity anchors and draft ownership/caption only. Connections, media,
 batches, attempts and secondary-operation tables are added with their workflows to
 avoid freezing unresolved account cardinality or deletion behavior. No auth, media,
 publishing or fake adapters are exposed. Liveness reports the web process only;
 readiness checks DB and expected schema without leaking details. Production migrations
 are an explicit release step, never implicit in web-process startup.
+
+Phase 2 now implements Better Auth 1.7.5 with its official Drizzle adapter, login-token
+minimization, persistent sessions, owner-scoped connections and versioned AES-GCM
+platform-token envelopes. No platform OAuth adapter is implemented yet. Draft identity
+bindings are required for approved reconnection invalidation, not media/publishing scope.
+See `docs/phase-2-setup.md` for trust boundaries and external verification limits.

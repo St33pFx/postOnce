@@ -1,5 +1,9 @@
 # Desarrollo — Phase 1
 
+Este documento registra la base original. Phase 2 añade Google Sign-In, sesiones y
+conexiones: seguir `phase-2-setup.md` para el estado actual. Los límites de Phase 1
+descritos abajo son históricos, no una afirmación de ausencia de auth en Phase 2.
+
 Requisitos: Node.js 24 y npm. Versiones exactas en package-lock.json; usar `npm ci`.
 En PowerShell con scripts restringidos, usar `npm.cmd` en lugar de `npm`.
 

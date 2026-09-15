@@ -2,7 +2,10 @@
 
 - `platforms`: platform identities; adapters are deliberately absent pending real integration work.
 - `publishing`: pure outcome/retry eligibility policies only; no executor or network effects.
-- `users` and `drafts`: initial tables in `src/db/schema.ts`, no exposed CRUD until auth exists.
+- `users`: stable domain mapping from verified Better Auth identity; not linked by email alone.
+- `auth`: real Google login/session and restricted HTTP surface.
+- `connections`: owner-scoped lifecycle, encrypted grants and prepared-content invalidation.
+- `drafts`: no general CRUD/editor yet; only identity binding metadata.
 
 Application routes orchestrate modules. Pure domain code must not import Next.js,
 database or external SDKs. Server infrastructure lives in `src/db` and is guarded

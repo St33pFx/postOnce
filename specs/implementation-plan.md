@@ -1,13 +1,13 @@
 # PostOnce — Implementation Plan
 
-## Phase 1 — Foundations (current)
+## Phase 1 — Foundations (completed)
 **Objective:** establish a runnable, testable modular-monolith foundation without platform integrations.
 **Includes:** Next.js/TypeScript scaffold, module boundaries, environment validation, Drizzle identity-anchor/draft ownership schema (not auth), migrations setup, health endpoint, test setup and developer documentation.
 **Main files:** `src/app`, `src/modules`, `src/db`, `src/config`, `drizzle.config.ts`, `vitest.config.ts`, `.env.example`.
 **Verification:** typecheck, lint, production build, unit/health tests, migration generation/check, SQL migration/constraint tests, and HTTP smoke checks. CI runs PostgreSQL service integration tests.
 **Depends on:** approved architecture and existing product specs.
 
-## Phase 2 — Identity and connections
+## Phase 2 — Identity and connections (implemented and locally verified)
 **Objective:** implement PostOnce authentication and secure platform connection records.
 **Includes:** Better Auth integration, encrypted token storage, connection lifecycle, OAuth adapter contracts (no fake TikTok).
 **Verification:** auth integration tests, authorization tests, token secrecy checks.
@@ -44,7 +44,8 @@
   must not decide account cardinality or draft deletion policy. Exit: repeatable checks,
   documented limitations, commits and push to official main, then stop for approval.
 - Phase 2: `src/modules/users`, `src/modules/connections`, auth routes/migrations.
-  Ask about sign-in methods and platform-account cardinality before implementing them.
+  Approved: Google-only login and one active connection per platform per user.
+  See `phase-2.md` for scope, security and acceptance checks.
 - Phase 3: `src/modules/drafts`, `src/modules/media`, storage infrastructure and draft UI.
   Resolve retention, quotas and blocking draft questions with the owner.
 - Phase 4: `src/modules/platforms/{instagram,tiktok,youtube}`, configuration UI/preflight.
