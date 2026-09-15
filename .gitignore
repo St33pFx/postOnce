@@ -31,3 +31,7 @@ logs/
 # Local uploads and generated media
 /uploads/
 /media/
+
+# Next.js / TypeScript
+.next/
+*.tsbuildinfo

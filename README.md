@@ -31,6 +31,9 @@ PostOnce es también un proyecto de aprendizaje de **Spec-Driven Development**. 
 - `specs/product.md` — propósito, alcance y límites de la V1
 - `specs/features/` — especificaciones funcionales por feature
 - `specs/research/platform-capabilities.md` — capacidades y restricciones investigadas de las plataformas
+- `specs/architecture.md` — arquitectura aprobada y decisiones de jobs/auth
+- `specs/implementation-plan.md` — fases y verificaciones
+- `docs/development.md` — instalación, migraciones y checks
 
 ## Alcance actual
 

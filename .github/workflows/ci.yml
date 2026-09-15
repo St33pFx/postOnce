@@ -1,0 +1,39 @@
+name: Foundation checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postonce
+          POSTGRES_PASSWORD: ci_only
+          POSTGRES_DB: postonce_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postonce -d postonce_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postonce:ci_only@localhost:5432/postonce_test
+      DATABASE_SSL: disable
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run db:generate && git diff --exit-code -- src/db/migrations
+      - run: npm run test:postgres
+      - name: Production HTTP smoke (unconfigured DB must not be ready)
+        run: |
+          npm start > /tmp/postonce.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID' EXIT
+          for i in $(seq 1 30); do curl -fsS http://localhost:3000/api/health/live && break || sleep 1; done
+          npm run smoke
