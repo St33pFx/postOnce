@@ -26,9 +26,9 @@ export default async function Account() {
   const labels = { disconnected: "Desconectada", connected: "Conectada", requires_reconnection: "Requiere reconexión", ineligible: "No elegible" };
   const descriptions = { instagram: "Conecta una cuenta profesional para publicar Reels.", tiktok: "Conecta TikTok para publicar con tus preferencias de privacidad.", youtube: "Conecta tu canal para publicar videos y miniaturas." };
   const titles = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube" };
-  return <main className="app-shell"><header className="page-header"><div><p className="eyebrow">POSTONCE / CUENTA</p><h1>Cuenta</h1><p className="lede">Administra tus conexiones de publicación.</p></div><nav className="top-nav"><Link href="/drafts">Drafts</Link><Link className="active" href="/account">Cuenta</Link></nav></header>
+  return <main className="app-shell"><header className="page-header"><div><p className="eyebrow">POSTONCE / CUENTA</p><h1 aria-label="Tu cuenta de PostOnce">Cuenta</h1><p className="lede">Administra tus conexiones de publicación.</p></div><nav className="top-nav"><Link href="/drafts">Drafts</Link><Link className="active" href="/account">Cuenta</Link></nav></header>
     <section className="profile-card"><div className="avatar">{profile?.user.name?.slice(0,1).toUpperCase() ?? "P"}</div><div><p className="eyebrow">PERFIL</p><h2>{profile?.user.name ?? "Tu cuenta"}</h2><p>{profile?.user.email ?? "Sesión iniciada con Google"}</p></div></section>
-    <section className="connections-section"><div className="section-heading"><div><p className="eyebrow">CANALES</p><h2>Cuentas conectadas</h2></div><Link className="button secondary" href="/drafts">Volver a drafts</Link></div><div className="connection-grid">{platforms.map((platform) => {
+    <section className="connections-section"><div className="section-heading"><div><p className="eyebrow">CANALES</p><h2>Cuentas conectadas</h2></div><Link className="button secondary" href="/drafts">Abrir mis drafts</Link></div><div className="connection-grid">{platforms.map((platform) => {
       const account = accounts.find((row) => row.platform === platform);
       const status = account?.status === "connected" && account.expiresAt && account.expiresAt <= new Date()
         ? "requires_reconnection" : account?.status ?? "disconnected";
