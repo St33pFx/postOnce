@@ -1,4 +1,4 @@
-name: Phase 1 and 2 checks
+name: PostOnce CI
 on: [push, pull_request]
 permissions:
   contents: read
