@@ -7,7 +7,7 @@ export type Preflight = { platform:Platform; status:"Ready"|"NotReady"; reasons:
 export interface PlatformAdapter { readonly platform:Platform; account():Promise<Account>; capabilities(account:Account):Record<string,Capability>; validate(input:{caption:string; config:PlatformConfig; media:MediaMetadata|null; account:Account; capabilities:Record<string,Capability>}):Promise<Preflight>; }
 const reason=(platform:Platform,reasons:string[]):Preflight=>({platform,status:reasons.length?"NotReady":"Ready",reasons,refreshedAt:new Date().toISOString()});
 export function validatePlatform(platform:Platform,input:{caption:string;config:PlatformConfig;media:MediaMetadata|null;account:Account;capabilities:Record<string,Capability>}):Preflight {
- const {caption,config,media,account,capabilities:c}=input,reasons:string[]=[];
+ const {config,media,account,capabilities:c}=input,reasons:string[]=[];
  if(!account.connected) reasons.push("Cuenta no conectada"); else if(!account.eligible) reasons.push("Cuenta no elegible");
  if(!account.scopes.includes(platform==="instagram"?"instagram_basic":platform==="tiktok"?"video.publish":"youtube.upload")) reasons.push("Scopes insuficientes");
  if(!media) reasons.push("Video requerido");
