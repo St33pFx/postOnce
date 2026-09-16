@@ -9,10 +9,10 @@ export function LoginButton() {
   return <><button disabled={pending} onClick={async () => {
     setPending(true); setError(false);
     try {
-      const result = await auth.signIn.social({ provider: "google", callbackURL: "/account" });
+      const result = await auth.signIn.social({ provider: "google", callbackURL: "/drafts" });
       if (result.error) setError(true);
     } catch { setError(true); }
     finally { setPending(false); }
-  }}>{pending ? "Abriendo Google…" : "Continuar con Google"}</button>
-  {error && <p role="alert">No se pudo iniciar sesión. Verifica la configuración o intenta de nuevo.</p>}</>;
+  }}>{pending ? "Abriendo Googleâ€¦" : "Continuar con Google"}</button>
+  {error && <p role="alert">No se pudo iniciar sesiÃ³n. Verifica la configuraciÃ³n o intenta de nuevo.</p>}</>;
 }

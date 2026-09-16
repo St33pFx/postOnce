@@ -1,16 +1,6 @@
 import Link from "next/link";
-export default function Home() {
-  return (
-    <main>
-      <p className="eyebrow">POSTONCE / IDENTITY AND CONNECTIONS</p>
-      <h1>Una base para publicar una sola vez.</h1>
-      <p>Estamos construyendo PostOnce para Instagram, TikTok y YouTube.</p>
-      <section aria-labelledby="status">
-        <h2 id="status">Cimientos en desarrollo</h2>
-        <p>Esta versión técnica todavía no permite cargar videos ni publicar.
-          No hay integraciones simuladas.</p>
-        <Link href="/login">Iniciar sesión con Google</Link>
-      </section>
-    </main>
-  );
-}
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { currentUser } from "../modules/auth/server";
+export const dynamic = "force-dynamic";
+export default async function Home(){try{if(await currentUser(await headers()))redirect("/drafts");}catch{}return <main><p className="eyebrow">POSTONCE</p><h1>Prepara tus publicaciones en un solo lugar.</h1><p>Organiza tus drafts y conexiones para Instagram, TikTok y YouTube.</p><Link href="/login">Iniciar sesión</Link></main>;}
