@@ -15,3 +15,4 @@ export async function DELETE(request: Request, context: { params: Promise<{ key:
     return new Response(null, { status: 204 });
   } catch { return Response.json({ error: "Service unavailable" }, { status: 503 }); }
 }
+
