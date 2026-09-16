@@ -38,7 +38,8 @@ jobs:
           curl -fsSL "https://github.com/seaweedfs/seaweedfs/releases/download/${SEAWEED_VERSION}/linux_amd64.tar.gz" -o "$RUNNER_TEMP/weed.tar.gz"
           tar -xzf "$RUNNER_TEMP/weed.tar.gz" -C "$SEAWEED_DIR"
           chmod +x "$SEAWEED_DIR/weed"
-          echo "WEED_PATH=$SEAWEED_DIR/weed" >> "$GITHUB_ENV"
+          echo "$SEAWEED_DIR" >> "$GITHUB_PATH"
+          echo "WEED_PATH=weed" >> "$GITHUB_ENV"
       - name: Verify SeaweedFS
         run: "$WEED_PATH version"
       - name: Install Playwright Chromium
