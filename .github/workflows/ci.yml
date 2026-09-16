@@ -32,7 +32,7 @@ jobs:
       - run: npm run test:postgres
       - name: Install pinned SeaweedFS
         run: |
-          SEAWEED_VERSION=3.80
+          SEAWEED_VERSION=4.28
           SEAWEED_DIR="$RUNNER_TEMP/seaweedfs"
           mkdir -p "$SEAWEED_DIR"
           curl -fsSL "https://github.com/seaweedfs/seaweedfs/releases/download/${SEAWEED_VERSION}/linux_amd64.tar.gz" -o "$RUNNER_TEMP/weed.tar.gz"
