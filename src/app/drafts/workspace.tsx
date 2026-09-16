@@ -7,6 +7,7 @@ import type { CoverState, MediaMetadata } from "../../modules/media/model";
 import { PlatformEditor } from "./platform-editor";
 import { parseConfigurations, type PlatformConfigurations } from "../../modules/platforms/configuration";
 import { api, uploadFile } from "./client-api";
+import { PublishingPanel } from "./publishing-panel";
 type Draft={id:string;caption:string|null;version:number;videoId:string|null;cover:CoverState|null;updatedAt:string};
 type Asset={id:string;kind:string;status:string;size:number;partSize:number;metadata:MediaMetadata|null;recipe:{sourceId:string}|null;error:string|null};
 type Editable={caption:string;videoId:string|null;cover:CoverState|null;platformConfig:PlatformConfigurations};
@@ -81,6 +82,7 @@ export function DraftWorkspace(){
     const asset=await api<Asset>("/api/media","POST",{draftId:open.draft.id,kind,sourceId,seconds,cover});
     await refresh();await api(`/api/media/${asset.id}/process`,"POST");
   }
+  async function saveForServerAction(){await saver.current?.flush();if(saver.current?.status!=="saved")throw new Error("Guarda o resuelve el conflicto antes de continuar");}
   const base=open?.assets.find(a=>a.id===edit.cover?.baseId);
   const video=open?.assets.find(a=>a.id===edit.videoId);
   return <main className="draft-workspace"><nav><Link href="/account">Cuenta</Link><span>Drafts y media</span></nav>
@@ -92,7 +94,8 @@ export function DraftWorkspace(){
         <button onClick={()=>{if(window.confirm("¿Descartar los cambios locales y cargar la versión del servidor?"))void action(()=>select(open.draft.id,true));}}>Cargar versión del servidor</button></div>}
       {status==="error"&&<button onClick={()=>void saver.current?.flush()}>Reintentar guardado</button>}
       <label>Caption general<textarea maxLength={20000} value={edit.caption} onChange={e=>change({...edit,caption:e.target.value})}/></label>
-      <PlatformEditor key={open.draft.id} draftId={open.draft.id} caption={edit.caption} config={edit.platformConfig} onChange={platformConfig=>change({...edit,platformConfig})} save={async()=>{await saver.current?.flush();if(saver.current?.status!=="saved")throw new Error("Guarda o resuelve el conflicto antes de preflight");}}/>
+      <PlatformEditor key={open.draft.id} draftId={open.draft.id} caption={edit.caption} config={edit.platformConfig} onChange={platformConfig=>change({...edit,platformConfig})} save={saveForServerAction}/>
+      <PublishingPanel draftId={open.draft.id} save={saveForServerAction}/>
       <button onClick={()=>void saver.current?.flush()}>Guardar ahora</button>
       <p>Media activa y reservada: {bytes(open.usage.used)} de {bytes(open.usage.limit)}.</p>
       <section><h2>Video e imágenes</h2><p>MP4/MOV hasta {bytes(open.limits.video)}. JPEG/PNG/WebP hasta {bytes(open.limits.image)}. El archivo pasa una validación antes de poder seleccionarlo.</p>

@@ -28,4 +28,9 @@ video { display: block; max-width: 100%; max-height: 32rem; }
 .cover-text { position: absolute; width: max-content; max-width: 90%; max-height: 90%; overflow: hidden; overflow-wrap: anywhere; white-space: pre-wrap; text-align: center; line-height: 1.2; font-family: 'DejaVu Sans',sans-serif; font-weight: 700; touch-action: none; cursor: move; user-select: none; }
 .cover-text.light { color: white; }.cover-text.dark { color: #172b25; }.cover-text.banner { color: white; background: #172b25; }
 progress { width: 100%; }
+.publish-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+.publish-card { min-width: 0; padding: 1rem; border: 1px solid #bccbc2; border-radius: .5rem; background: #fff; overflow-wrap: anywhere; }
+.publish-card h3 { margin-top: 0; }
+.secondary-operation { border-top: 1px solid #bccbc2; margin-top: 1rem; padding-top: .5rem; }
 @media(max-width: 720px) { .draft-layout { grid-template-columns: minmax(0,1fr); }.draft-layout aside { max-height: 15rem; overflow: auto; } }
+@media(max-width: 900px) { .publish-grid { grid-template-columns: minmax(0,1fr); } }

@@ -27,14 +27,14 @@ it("loads local env, waits for dependencies, migrates and sets up storage before
   vi.spyOn(console, "log").mockImplementation(() => {});
   let exited = false;
   const running = import("./dev-local.mjs").then(() => { exited = true; });
-  await vi.waitFor(() => expect(fixtures.children).toHaveLength(5));
+  await vi.waitFor(() => expect(fixtures.children).toHaveLength(6));
   const { config } = await import("dotenv");
   expect(config).toHaveBeenCalledWith({ path: ".env.local", quiet: true });
   expect(fixtures.children[0].args).toContain("--wait");
-  expect(fixtures.children.slice(1, 4).map(c => c.args.at(-1))).toEqual(["scripts/wait-storage.ts", "scripts/migrate.ts", "scripts/storage-setup.ts"]);
+  expect(fixtures.children.slice(1, 5).map(c => c.args.at(-1))).toEqual(["scripts/wait-storage.ts", "scripts/migrate.ts", "scripts/jobs-migrate.ts", "scripts/storage-setup.ts"]);
   expect(fixtures.children.slice(1).every(c => c.command === process.execPath)).toBe(true);
   expect(exited).toBe(false);
-  const next = fixtures.children[4];
+  const next = fixtures.children[5];
   expect(next.options.stdio).toEqual(["inherit", "inherit", "inherit", "ipc"]);
   process.emit("SIGINT");
   await running;

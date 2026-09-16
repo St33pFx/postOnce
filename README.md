@@ -35,6 +35,7 @@ PostOnce es también un proyecto de aprendizaje de **Spec-Driven Development**. 
 - `specs/implementation-plan.md` — fases y verificaciones
 - `docs/development.md` — instalación, migraciones y checks
 - `docs/phase-2-setup.md` — Google Sign-In, secretos, conexiones y configuración externa
+- `docs/phase-5-deployment.md` — publicación durable, worker y despliegue remoto
 
 ## Alcance actual
 

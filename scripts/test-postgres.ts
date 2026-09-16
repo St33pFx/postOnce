@@ -2,6 +2,12 @@ import "dotenv/config";
 import assert from "node:assert/strict";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { createConnection } from "../src/db/connection";
+import { platformPublishAttempt, publishBatch } from "../src/db/publishing-schema";
+import { bossFromEnv, PgBossPublishingQueue, prepareQueues, type QueueTransaction } from "../src/infrastructure/jobs/publishing";
+import { PublishingService } from "../src/modules/publishing/service";
+import { registerPublishingWorkers } from "../src/worker/publishing-worker";
+import { eq } from "drizzle-orm";
+import { Readable } from "node:stream";
 
 // Must target a dedicated disposable test database. No tables are dropped.
 async function main() {
@@ -39,14 +45,46 @@ async function main() {
       await client.query("ROLLBACK");
       const rolledBack = await client.query("SELECT id FROM drafts WHERE id=$1", [draft.rows[0].id]);
       assert.equal(rolledBack.rowCount, 0);
-      console.log("PostgreSQL: migrations, insert, FK, deletion guard, connection cardinality, binding ownership and rollback passed.");
+      const queueBoss = bossFromEnv(process.env, true);
+      queueBoss.on("error", () => {});
+      try {
+        await queueBoss.start();
+        await prepareQueues(queueBoss);
+        const queue = new PgBossPublishingQueue(queueBoss);
+        const owner = (await db.insert((await import("../src/db/schema")).postonceUsers).values({}).returning())[0];
+        const durableDraft = (await db.insert((await import("../src/db/schema")).drafts).values({ userId: owner.id, caption: "durable" }).returning())[0];
+        const created = await db.transaction(async tx => {
+          const [batch] = await tx.insert(publishBatch).values({ userId: owner.id, draftId: durableDraft.id, draftVersion: durableDraft.version }).returning();
+          const [attempt] = await tx.insert(platformPublishAttempt).values({ batchId: batch.id, platform: "instagram" }).returning();
+          await queue.enqueueAttempt(tx as unknown as QueueTransaction, attempt.id);
+          return attempt;
+        });
+        const resolver = async () => ({ adapter: { platform: "instagram" as const,
+          publish: async (_input: unknown, events: { creation(id:string,stage:string):Promise<void> }) => { await events.creation("remote-container", "created"); return { status: "Published" as const, remoteId: "remote-post" }; },
+          reconcile: async () => ({ status: "Published" as const, remoteId: "remote-post" }) },
+          input: { token: "test", remoteAccountId: "test", caption: "", config: { platform: "instagram" as const, enabled: true },
+            video: { size: 1, mime: "video/mp4", stream: async () => Readable.from("x"), url: async () => "https://media.test/x" } } });
+        const publishing = new PublishingService(db, queue, resolver);
+        await registerPublishingWorkers(queueBoss, publishing);
+        let consumed = false;
+        for (let i = 0; i < 80; i++) {
+          const [attempt] = await db.select().from(platformPublishAttempt).where(eq(platformPublishAttempt.id, created.id));
+          if (attempt.status === "Published") { consumed = true; assert.equal(attempt.remoteCreationId, "remote-container"); assert.equal(attempt.remoteId, "remote-post"); break; }
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        assert.equal(consumed, true, "pg-boss worker did not consume the durable publication job");
+      } finally { await queueBoss.stop({ graceful: true }); }
+      console.log("PostgreSQL: migrations, constraints, rollback and pg-boss durable worker consumption passed.");
     } finally {
       await client.query("ROLLBACK");
       client.release();
     }
   } finally { await pool.end(); }
 }
-main().catch(() => {
-  console.error("PostgreSQL integration failed; verify the disposable TEST_DATABASE_URL.");
+main().catch((error) => {
+  const code = typeof error === "object" && error && "code" in error ? String(error.code) :
+    typeof error === "object" && error && "cause" in error && typeof error.cause === "object" && error.cause && "code" in error.cause ? String(error.cause.code) : "unknown";
+  const detail = typeof error === "object" && error && "cause" in error && error.cause instanceof Error ? error.cause.message : error instanceof Error ? error.message.split("\n")[0] : "unknown";
+  console.error(`PostgreSQL integration failed (${code}: ${detail}); verify migrations and the disposable database.`);
   process.exitCode = 1;
 });

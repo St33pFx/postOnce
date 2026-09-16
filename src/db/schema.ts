@@ -2,6 +2,7 @@ import { index, integer, jsonb, pgTable, text, timestamp, unique, uuid } from "d
 import type { CoverState } from "../modules/media/model";
 import { user } from "./auth-schema";
 export { user, session, account, verification } from "./auth-schema";
+export { publishBatch, platformPublishAttempt, secondaryOperation, publishStatus } from "./publishing-schema";
 
 /** Identity anchor; Better Auth's schema is intentionally added in Phase 2. */
 export const postonceUsers = pgTable("postonce_users", {

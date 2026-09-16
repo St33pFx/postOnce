@@ -29,6 +29,7 @@ try {
   await run("docker", ["compose", "-f", "docker-compose.dev.yml", "up", "-d", "--wait", "--wait-timeout", "120"]);
   await run(process.execPath, ["--import", "tsx", "scripts/wait-storage.ts"]);
   await run(process.execPath, ["--import", "tsx", "scripts/migrate.ts"]);
+  await run(process.execPath, ["--import", "tsx", "scripts/jobs-migrate.ts"]);
   await run(process.execPath, ["--import", "tsx", "scripts/storage-setup.ts"]);
   if (!stopping) console.log("PostOnce local: http://localhost:3000 — Ctrl+C to stop Next.");
   await run(process.execPath, ["--import", "./scripts/dev-signals.mjs", "node_modules/next/dist/bin/next", "dev", "--port", "3000"], true);
