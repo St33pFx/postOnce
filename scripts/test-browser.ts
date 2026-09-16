@@ -2,6 +2,8 @@ import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { testStorage } from "./test-support";
 if(!process.env.TEST_DATABASE_URL)throw new Error("Disposable TEST_DATABASE_URL required");
+process.env.DATABASE_URL=process.env.TEST_DATABASE_URL;
+process.env.DATABASE_SSL="disable";
 const storage=await testStorage();
 try{
   const child=spawn(process.execPath,["node_modules/@playwright/test/cli.js","test"],{stdio:"inherit",windowsHide:true,
