@@ -12,6 +12,12 @@ describe("database configuration", () => {
     expect(databaseConfig({ DATABASE_URL: url }).ssl).toBe(false);
     expect(databaseConfig({ DATABASE_URL: url, NODE_ENV: "production" }).ssl).toEqual({ rejectUnauthorized: true });
   });
+  it("keeps TLS on but accepts Railway private-network certificates only for its reserved host suffix", () => {
+    expect(databaseConfig({ DATABASE_URL: "postgresql://user:secret@postgres.railway.internal:5432/postonce", NODE_ENV: "production" }).ssl)
+      .toEqual({ rejectUnauthorized: false });
+    expect(databaseConfig({ DATABASE_URL: "postgresql://user:secret@postgres.railway.internal.example:5432/postonce", NODE_ENV: "production" }).ssl)
+      .toEqual({ rejectUnauthorized: true });
+  });
   it("rejects disabled production TLS and unknown modes", () => {
     for (const mode of ["disable", "require", "typo"]) {
       expect(() => databaseConfig({ DATABASE_URL: url, NODE_ENV: "production", DATABASE_SSL: mode }))

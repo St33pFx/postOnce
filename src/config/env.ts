@@ -1,6 +1,10 @@
 export interface DatabaseConfig {
   url: string;
-  ssl: false | { rejectUnauthorized: true };
+  ssl: false | { rejectUnauthorized: boolean };
+}
+
+function isRailwayPrivateHost(hostname: string) {
+  return hostname.endsWith(".railway.internal");
 }
 
 /** Errors deliberately contain variable names only, never input values. */
@@ -19,5 +23,9 @@ export function databaseConfig(env: Record<string, string | undefined>): Databas
       (env.NODE_ENV === "production" && ssl !== "verify-full")) {
     throw new Error("Invalid DATABASE_SSL");
   }
-  return { url: value, ssl: ssl === "verify-full" ? { rejectUnauthorized: true } : false };
+  // Railway's private network is encrypted by WireGuard, but its internal
+  // PostgreSQL certificate is not a public CA chain. Restrict the relaxed
+  // trust decision to Railway's reserved private DNS suffix only.
+  const privateRailway = isRailwayPrivateHost(url.hostname);
+  return { url: value, ssl: ssl === "verify-full" ? { rejectUnauthorized: !privateRailway } : false };
 }

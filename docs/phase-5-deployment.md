@@ -2,19 +2,20 @@
 
 ## Runtime topology
 
-PostOnce runs as two persistent Node services from the same release:
+PostOnce runs as three persistent Node services from the same release:
 
 ```text
 HTTPS -> Next web (`npm start`) -> managed PostgreSQL <- worker (`npm run worker`)
                    |                       |
-                   +---- private S3 -------+
+                   +---- private S3 ---- media (`npm run media:serve`)
 ```
 
 The web process authenticates users, repeats preflight and creates a batch plus
 pg-boss jobs in one PostgreSQL transaction. The worker is the only process that
-executes publishing side effects. Closing or reloading the browser does not stop
-jobs. Both services use the same `DATABASE_URL`, token-encryption keyring and S3
-configuration. Production does not require Docker Desktop or SeaweedFS.
+executes publishing side effects. The media process owns FFmpeg/FFprobe work.
+Closing or reloading the browser does not stop jobs. All three services use the
+same `DATABASE_URL`, token-encryption keyring and S3 configuration. Production
+does not require Docker Desktop or SeaweedFS.
 
 Deploy managed PostgreSQL with verified TLS and private S3-compatible storage.
 Build with `npm ci && npm run build`. As an explicit release step, run

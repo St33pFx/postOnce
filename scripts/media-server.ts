@@ -11,6 +11,7 @@ if (!secret || secret.length < 32) throw new Error("Invalid MEDIA_SERVICE_SECRET
 const { db } = createConnection();
 const service = new MediaService(db, storageFromEnv());
 let busy = false;
+const port = Number(process.env.MEDIA_SERVICE_PORT ?? process.env.PORT ?? 4010);
 createServer(async (req,res) => {
   const token = Buffer.from(req.headers.authorization ?? "");
   const expected = Buffer.from(`Bearer ${secret}`);
@@ -27,4 +28,4 @@ createServer(async (req,res) => {
     res.writeHead(202).end();
     void processAsset(service,userId,id).catch(() => console.error("Media operation failed")).finally(() => { busy = false; });
   } catch { busy = false; res.writeHead(400).end(); }
-}).listen(Number(process.env.MEDIA_SERVICE_PORT ?? 4010), process.env.MEDIA_SERVICE_HOST ?? "127.0.0.1", () => console.log("Media service ready"));
+}).listen(port, "0.0.0.0", () => console.log(`Media service ready on ${port}`));
