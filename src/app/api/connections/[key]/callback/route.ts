@@ -6,8 +6,8 @@ import { ConnectionService } from "../../../../../modules/connections/service";
 import { vaultFromEnv } from "../../../../../modules/connections/vault";
 
 export const dynamic = "force-dynamic";
-export async function GET(request: Request, context: { params: Promise<{ platform: string }> }) {
-  const { platform } = await context.params;
+export async function GET(request: Request, context: { params: Promise<{ key: string }> }) {
+  const { key: platform } = await context.params;
   if (!platforms.includes(platform as Platform)) return Response.redirect(new URL("/account?connection=error", request.url));
   const platformName = platform as Platform, url = new URL(request.url), cookieJar = await cookies(), cookieName = oauthCookieName(platformName), saved = cookieJar.get(cookieName)?.value;
   cookieJar.set(cookieName, "", { maxAge: 0, path: `/api/connections/${platformName}` });

@@ -4,9 +4,9 @@ import { platforms, type Platform } from "../../../../../modules/platforms/domai
 import { authorizeUrl, createOAuthState, oauthCookieName } from "../../../../../modules/connections/oauth";
 
 export const dynamic = "force-dynamic";
-export async function GET(request: Request, context: { params: Promise<{ platform: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ key: string }> }) {
   try {
-    const { platform } = await context.params;
+    const { key: platform } = await context.params;
     if (!platforms.includes(platform as Platform)) return Response.json({ error: "Platform not found" }, { status: 404 });
     const user = await currentUser(request.headers); if (!user) return Response.redirect(new URL("/login", request.url));
     const origin = identityServices().origin, redirectUri = `${origin}/api/connections/${platform}/callback`, state = createOAuthState(platform as Platform, user.id);
