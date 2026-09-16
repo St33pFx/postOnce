@@ -27,7 +27,7 @@ test.beforeAll(async()=>{
   }]}}));storage.client.destroy();
 });
 test("draft autosave, recovery, conflicts and touch-compatible media editor",async({page,context,browser})=>{
-  const cookie=await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Crear draft"}).click();
+  const cookie=await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Nueva publicación"}).click();
   const caption=page.getByLabel("Caption general");await caption.fill("Trabajo confirmado entre dispositivos");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
   await page.reload();await page.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();await expect(caption).toHaveValue("Trabajo confirmado entre dispositivos");
   const other=await browser.newContext();await other.addCookies([cookie]);const second=await other.newPage();await second.goto("/drafts");await second.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();
@@ -45,7 +45,7 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
 });
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
-  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Crear draft"}).click();
+  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Nueva publicación"}).click();
   await page.getByLabel("Seleccionar instagram").check();await page.getByLabel("Seleccionar tiktok").check();await page.getByLabel("Seleccionar youtube").check();
   await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
   await page.getByRole("button",{name:"Ejecutar preflight"}).click();
