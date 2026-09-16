@@ -30,6 +30,9 @@ jobs:
       - run: npm run check
       - run: npm run db:generate && git diff --exit-code -- src/db/migrations
       - run: npm run test:postgres
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       # Known moderate esbuild development-server advisory is documented in docs/phase-2-setup.md.
       - run: npm audit --omit=dev --audit-level=high
       - name: Production HTTP smoke (unconfigured DB must not be ready)

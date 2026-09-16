@@ -13,3 +13,4 @@
 No publish batch, attempt, queue, retry or reconciliation code belongs to this phase.
 
 - requiresRevalidation: preflight emits binding_requires_revalidation and never clears it; confirmBinding explicitly validates current revision (preflight.test).
+- Browser E2E: GitHub Actions runs `npm run test:browser` against the disposable PostgreSQL 17 service using the workflow-provided `TEST_DATABASE_URL` and `DATABASE_SSL=disable`.
