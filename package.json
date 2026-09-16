@@ -17,10 +17,17 @@
     "db:check": "drizzle-kit check",
     "db:migrate": "tsx scripts/migrate.ts",
     "test:postgres": "tsx scripts/test-postgres.ts",
+    "test:media": "tsx scripts/test-media.ts",
+    "test:browser": "tsx scripts/test-browser.ts",
+    "media:serve": "tsx scripts/media-server.ts",
+    "storage:setup": "tsx scripts/storage-setup.ts",
+    "media:cleanup": "tsx scripts/media-cleanup.ts",
     "smoke": "node scripts/smoke.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run db:check && npm run build"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1132.0",
+    "@aws-sdk/s3-request-presigner": "3.1132.0",
     "@better-auth/drizzle-adapter": "1.7.5",
     "better-auth": "1.7.5",
     "drizzle-orm": "0.45.2",
@@ -28,12 +35,14 @@
     "pg": "8.23.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
     "@eslint/js": "10.0.1",
     "@next/eslint-plugin-next": "16.3.5",
+    "@playwright/test": "1.63.0",
     "@types/node": "24.13.4",
     "@types/pg": "8.23.1",
     "@types/react": "19.3.0",

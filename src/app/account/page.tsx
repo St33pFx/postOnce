@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser, identityServices } from "../../modules/auth/server";
 import { LogoutButton } from "./logout-button";
@@ -21,7 +22,7 @@ export default async function Account() {
     .innerJoin(connections, eq(connections.id, draftConnections.connectionId))
     .where(and(eq(draftConnections.userId, user.id), eq(draftConnections.requiresConfirmation, true)));
   const labels = { disconnected: "Desconectada", connected: "Conectada", requires_reconnection: "Requiere reconexión", ineligible: "No elegible" };
-  return <main><h1>Tu cuenta de PostOnce</h1><p>Sesión iniciada.</p>
+  return <main><h1>Tu cuenta de PostOnce</h1><p>Sesión iniciada.</p><Link href="/drafts">Abrir mis drafts</Link>
     <p>Las conexiones de Instagram, TikTok y YouTube son independientes de este login.
       Sus adapters OAuth todavía no están disponibles; no se simula ninguna conexión.</p>
     {platforms.map((platform) => {

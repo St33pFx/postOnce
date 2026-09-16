@@ -6,3 +6,26 @@ h1 { font-size: clamp(2rem, 6vw, 4rem); line-height: 1.12; max-width: 17ch; }
 p { max-width: 62ch; line-height: 1.65; }
 .eyebrow { letter-spacing: .13em; font-size: .8rem; }
 section { margin-top: 3rem; border-top: 1px solid #bccbc2; padding-top: 1rem; }
+button, input, select, textarea { font: inherit; }
+button, input, select { min-height: 44px; }
+button { padding: .6rem .9rem; margin: .25rem; cursor: pointer; border: 1px solid #688378; border-radius: .4rem; background: #fff; color: #172b25; }
+button:disabled { opacity: .55; cursor: default; }
+button[aria-current="true"] { background: #d4e8dc; }
+label { display: block; margin: 1rem 0; }
+textarea { display: block; width: 100%; min-height: 8rem; padding: .75rem; }
+input, select { max-width: 100%; }
+small { display: block; margin: .4rem 0; }
+nav { display: flex; gap: 2rem; }
+.draft-workspace { max-width: 90rem; padding: clamp(1rem,3vw,3rem); }
+.draft-layout { display: grid; grid-template-columns: 16rem minmax(0,1fr); gap: 2rem; }
+.draft-layout ul { padding: 0; list-style: none; }
+.draft-layout aside button { width: 100%; text-align: left; overflow-wrap: anywhere; }
+.asset-list li { padding: 1rem 0; border-bottom: 1px solid #bccbc2; overflow-wrap: anywhere; }
+.notice { border: 1px solid #ab6131; padding: 1rem; background: #fff4df; overflow-wrap: anywhere; }
+video { display: block; max-width: 100%; max-height: 32rem; }
+.cover-preview { position: relative; width: 100%; max-width: 38rem; background: #d4e0d8; overflow: hidden; }
+.cover-preview img { width: 100%; height: 100%; object-fit: contain; }
+.cover-text { position: absolute; width: max-content; max-width: 90%; max-height: 90%; overflow: hidden; overflow-wrap: anywhere; white-space: pre-wrap; text-align: center; line-height: 1.2; font-family: 'DejaVu Sans',sans-serif; font-weight: 700; touch-action: none; cursor: move; user-select: none; }
+.cover-text.light { color: white; }.cover-text.dark { color: #172b25; }.cover-text.banner { color: white; background: #172b25; }
+progress { width: 100%; }
+@media(max-width: 720px) { .draft-layout { grid-template-columns: minmax(0,1fr); }.draft-layout aside { max-height: 15rem; overflow: auto; } }

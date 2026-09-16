@@ -22,6 +22,13 @@
       "when": 1789461444258,
       "tag": "0002_smart_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789494356963,
+      "tag": "0003_pink_bedlam",
+      "breakpoints": true
     }
   ]
 }
