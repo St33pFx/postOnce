@@ -30,6 +30,17 @@ jobs:
       - run: npm run check
       - run: npm run db:generate && git diff --exit-code -- src/db/migrations
       - run: npm run test:postgres
+      - name: Install pinned SeaweedFS
+        run: |
+          SEAWEED_VERSION=3.80
+          SEAWEED_DIR="$RUNNER_TEMP/seaweedfs"
+          mkdir -p "$SEAWEED_DIR"
+          curl -fsSL "https://github.com/seaweedfs/seaweedfs/releases/download/${SEAWEED_VERSION}/weed_linux_amd64.tar.gz" -o "$RUNNER_TEMP/weed.tar.gz"
+          tar -xzf "$RUNNER_TEMP/weed.tar.gz" -C "$SEAWEED_DIR"
+          chmod +x "$SEAWEED_DIR/weed"
+          echo "WEED_PATH=$SEAWEED_DIR/weed" >> "$GITHUB_ENV"
+      - name: Verify SeaweedFS
+        run: "$WEED_PATH version"
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - run: npm run test:browser
