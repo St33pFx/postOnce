@@ -18,6 +18,7 @@ export const drafts = pgTable("drafts", {
   version: integer("version").notNull().default(1),
   videoId: uuid("video_id"),
   cover: jsonb("cover").$type<CoverState>(),
+  platformConfig: jsonb("platform_config").$type<Record<string, unknown>>().notNull().default({}),
   lockedAt: timestamp("locked_at", { withTimezone: true }),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

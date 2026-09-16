@@ -16,7 +16,7 @@ export class DraftService {
     if (!row) throw new DomainError(404, "Draft no disponible");
     return row;
   }
-  async update(userId: string, id: string, version: number, input: { caption: string; videoId: string | null; cover: unknown }) {
+  async update(userId: string, id: string, version: number, input: { caption: string; videoId: string | null; cover: unknown; platformConfig?: Record<string, unknown> }) {
     if (typeof input.caption !== "string" || input.caption.length > 20_000 || (input.videoId !== null && !uuid(input.videoId))) throw new DomainError(400, "Draft inválido");
     const cover = coverState(input.cover);
     return this.db.transaction(async tx => {
@@ -29,7 +29,7 @@ export class DraftService {
         if (!asset || (video ? asset.kind !== "original_video" : !["uploaded_image", "extracted_frame"].includes(asset.kind))) throw new DomainError(400, "Media no disponible");
         if (!video && asset.kind === "extracted_frame" && asset.recipe?.sourceId !== input.videoId) throw new DomainError(409, "Selecciona una portada del video actual");
       }
-      return (await tx.update(drafts).set({ caption: input.caption, videoId: input.videoId, cover,
+      return (await tx.update(drafts).set({ caption: input.caption, videoId: input.videoId, cover, platformConfig: input.platformConfig ?? before.platformConfig,
         version: sql`${drafts.version} + 1`, updatedAt: new Date() }).where(eq(drafts.id, id)).returning())[0];
     });
   }

@@ -1,0 +1,1 @@
+ALTER TABLE "drafts" ADD COLUMN "platform_config" jsonb DEFAULT '{}'::jsonb NOT NULL;

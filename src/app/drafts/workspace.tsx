@@ -7,14 +7,14 @@ import type { CoverState, MediaMetadata } from "../../modules/media/model";
 import { api, uploadFile } from "./client-api";
 type Draft={id:string;caption:string|null;version:number;videoId:string|null;cover:CoverState|null;updatedAt:string};
 type Asset={id:string;kind:string;status:string;size:number;partSize:number;metadata:MediaMetadata|null;recipe:{sourceId:string}|null;error:string|null};
-type Editable={caption:string;videoId:string|null;cover:CoverState|null};
+type Editable={caption:string;videoId:string|null;cover:CoverState|null;platformConfig:Record<string,unknown>};
 type Open={draft:Draft;assets:Asset[];usage:{used:number;limit:number};limits:{video:number;image:number}};
 const labels:Record<SaveStatus,string>={saved:"Guardado en el servidor",pending:"Cambios pendientes",saving:"Guardando…",conflict:"Conflicto: existe otra versión",error:"No se pudo guardar"};
 const assetLabels:Record<string,string>={initiating:"Iniciando upload",uploading:"Upload pendiente",uploaded:"Pendiente de validación",processing:"Procesando…",ready:"Validado",failed:"Falló la validación",abandoned:"Cancelado; limpieza pendiente",deleting:"Eliminación pendiente"};
 const bytes=(n:number)=>`${(n/1_000_000).toFixed(1)} MB`;
 export function DraftWorkspace(){
   const [list,setList]=useState<Draft[]>([]),[open,setOpen]=useState<Open|null>(null);
-  const [edit,setEdit]=useState<Editable>({caption:"",videoId:null,cover:null});
+  const [edit,setEdit]=useState<Editable>({caption:"",videoId:null,cover:null,platformConfig:{}});
   const [status,setStatus]=useState<SaveStatus>("saved"),[error,setError]=useState("");
   const [urls,setUrls]=useState<Record<string,string>>({}),[seconds,setSeconds]=useState(0);
   const [upload,setUpload]=useState<{id:string;bytes:number;total:number}|null>(null);
@@ -57,7 +57,7 @@ export function DraftWorkspace(){
   async function select(id:string,discard=false){
     if(!discard){await saver.current?.flush();if(saver.current&&saver.current.status!=="saved"&&!window.confirm("Hay cambios sin guardar. ¿Descartarlos y abrir otro draft?"))return;}
     const data=await api<Open>(`/api/drafts/${id}`);
-    saver.current?.dispose();setOpen(data);setEdit({caption:data.draft.caption??"",videoId:data.draft.videoId,cover:data.draft.cover});setStatus("saved");setError("");setUrls({});
+    saver.current?.dispose();setOpen(data);setEdit({caption:data.draft.caption??"",videoId:data.draft.videoId,cover:data.draft.cover,platformConfig:(data.draft as any).platformConfig??{}});setStatus("saved");setError("");setUrls({});
     saver.current=new Autosave(data.draft.version,async(value,version)=>{
       const saved=await api<Draft>(`/api/drafts/${id}`,"PATCH",{...value,version});void listDrafts();return saved;
     },setStatus);
