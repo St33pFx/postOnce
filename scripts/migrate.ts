@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { createConnection } from "../src/db/connection";
 

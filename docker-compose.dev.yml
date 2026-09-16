@@ -7,9 +7,10 @@ services:
     healthcheck: { test: [CMD-SHELL, pg_isready -U postonce -d postonce], interval: 3s, timeout: 3s, retries: 20 }
   seaweedfs:
     image: chrislusf/seaweedfs:4.28
-    command: server -dir=/data -s3 -s3.port=8333
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
     ports: ["127.0.0.1:8333:8333"]
-    volumes: [postonce_dev_s3:/data]
+    volumes: [postonce_dev_s3:/data, "./scripts/seaweedfs-dev.json:/etc/seaweedfs/s3.json:ro"]
+    healthcheck: { test: [CMD-SHELL, "wget -q -O /dev/null http://127.0.0.1:9333/cluster/status"], interval: 3s, timeout: 3s, retries: 40 }
 volumes:
   postonce_dev_pg:
   postonce_dev_s3:

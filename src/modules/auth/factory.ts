@@ -3,18 +3,20 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "../../db/auth-schema";
 import { authConfig } from "../../config/auth";
+import { localLoginPlugin } from "./local";
 
 export function createAuth(db: NodePgDatabase<typeof import("../../db/schema")>, config: ReturnType<typeof authConfig>) {
   return betterAuth({
     appName: "PostOnce",
     baseURL: config.baseURL,
     secret: config.secret,
+    plugins: [localLoginPlugin],
     database: drizzleAdapter(db, { provider: "pg", schema, transaction: true }),
-    socialProviders: {
+    socialProviders: config.clientId && config.clientSecret ? {
       google: { clientId: config.clientId, clientSecret: config.clientSecret,
         scope: ["openid", "email", "profile"], disableDefaultScope: true,
         accessType: "online", includeGrantedScopes: false },
-    },
+    } : {},
     emailAndPassword: { enabled: false },
     trustedOrigins: [config.baseURL],
     account: { encryptOAuthTokens: true, storeStateStrategy: "database",

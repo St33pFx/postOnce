@@ -1,0 +1,7 @@
+{
+  "identities": [{
+    "name": "postonce-local-dev",
+    "credentials": [{ "accessKey": "postonce-local", "secretKey": "postonce-local-secret" }],
+    "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+  }]
+}

@@ -13,5 +13,5 @@ export function authConfig(env: Record<string, string | undefined>) {
   const localDev = env.NODE_ENV === "development" && env.POSTONCE_DEV_LOGIN === "1" && ["localhost", "127.0.0.1"].includes(url.hostname);
   if (!localDev && (!env.GOOGLE_CLIENT_ID?.trim() || !env.GOOGLE_CLIENT_SECRET?.trim())) throw new Error("Missing GOOGLE_CLIENT_ID");
   return { baseURL: url.origin, secret: env.BETTER_AUTH_SECRET!,
-    clientId: env.GOOGLE_CLIENT_ID ?? "local-dev-client", clientSecret: env.GOOGLE_CLIENT_SECRET ?? "local-dev-secret", secure: url.protocol === "https:" };
+    clientId: env.GOOGLE_CLIENT_ID ?? "", clientSecret: env.GOOGLE_CLIENT_SECRET ?? "", secure: url.protocol === "https:" };
 }

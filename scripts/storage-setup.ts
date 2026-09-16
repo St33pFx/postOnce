@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env";
 import { CreateBucketCommand, PutBucketCorsCommand, PutBucketLifecycleConfigurationCommand, PutPublicAccessBlockCommand } from "@aws-sdk/client-s3";
 import { storageFromEnv } from "../src/modules/media/storage";
 const storage=storageFromEnv();
