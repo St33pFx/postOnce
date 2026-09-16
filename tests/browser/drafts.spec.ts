@@ -31,12 +31,12 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   const caption=page.getByLabel("Caption general");await caption.fill("Trabajo confirmado entre dispositivos");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
   await page.reload();await page.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();await expect(caption).toHaveValue("Trabajo confirmado entre dispositivos");
   const other=await browser.newContext();await other.addCookies([cookie]);const second=await other.newPage();await second.goto("/drafts");await second.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();
-  await caption.fill("Primera edición");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
-  await second.getByLabel("Caption general").fill("Segunda edición en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versión");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda edición en conflicto");await other.close();
+  await caption.fill("Primera ediciÃƒÂ³n");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
+  await second.getByLabel("Caption general").fill("Segunda ediciÃƒÂ³n en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versiÃƒÂ³n");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda ediciÃƒÂ³n en conflicto");await other.close();
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover.png",mimeType:"image/png",buffer:image});
   await expect(page.getByRole("button",{name:"Usar como portada"})).toBeVisible({timeout:30_000});await page.getByRole("button",{name:"Usar como portada"}).click();
-  await page.getByLabel("Texto de portada").fill("Una portada");await page.getByLabel("Posición horizontal").fill("0.8");await page.getByLabel("Estilo",{exact:true}).selectOption("dark");
+  await page.getByLabel("Texto de portada").fill("Una portada");await page.getByLabel("PosiciÃƒÂ³n horizontal").fill("0.8");await page.getByRole("combobox",{name:"Estilo"}).selectOption("dark");
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");await page.getByRole("button",{name:"Generar portada"}).click();await expect(page.getByRole("link",{name:"Abrir imagen generada"})).toBeVisible({timeout:30_000});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.screenshot({path:`test-results/editor-${test.info().project.name}.png`,fullPage:true});
@@ -47,7 +47,7 @@ test("anonymous users cannot open drafts",async({page})=>{await page.goto("/draf
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Crear draft"}).click();
   await page.getByLabel("Seleccionar instagram").check();await page.getByLabel("Seleccionar tiktok").check();await page.getByLabel("Seleccionar youtube").check();
-  await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
+  await page.getByLabel("TÃƒÂ­tulo de YouTube").fill("TÃƒÂ­tulo especÃƒÂ­fico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
   await page.getByRole("button",{name:"Ejecutar preflight"}).click();
   await expect(page.getByLabel("Resultado global")).toHaveText(/NotReady/);await expect(page.getByLabel("Resultado instagram")).toContainText("NotReady");await expect(page.getByLabel("Resultado tiktok")).toContainText("NotReady");await expect(page.getByLabel("Resultado youtube")).toContainText("NotReady");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);

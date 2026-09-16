@@ -124,7 +124,7 @@ export function DraftWorkspace(){
         <label>Tamaño<input type="range" min=".02" max=".15" step=".005" value={edit.cover.size} onChange={e=>coverChange({size:Number(e.target.value)})}/></label>
         <label>Posición horizontal<input type="range" min="0" max="1" step=".01" value={edit.cover.x} onChange={e=>coverChange({x:Number(e.target.value)})}/></label>
         <label>Posición vertical<input type="range" min="0" max="1" step=".01" value={edit.cover.y} onChange={e=>coverChange({y:Number(e.target.value)})}/></label>
-        <label>Estilo<select value={edit.cover.style} onChange={e=>coverChange({style:e.target.value as CoverState["style"]})}><option value="light">Texto claro</option><option value="dark">Texto oscuro</option><option value="banner">Fondo oscuro</option></select></label>
+        <label htmlFor="cover-style">Estilo</label><select id="cover-style" value={edit.cover.style} onChange={e=>coverChange({style:e.target.value as CoverState["style"]})}><option value="light">Texto claro</option><option value="dark">Texto oscuro</option><option value="banner">Fondo oscuro</option></select>
         <button onClick={()=>coverChange({text:""})}>Eliminar texto</button><button disabled={busy||status==="conflict"} onClick={()=>void action(()=>derive("rendered_cover",edit.cover!.baseId,edit.cover!))}>Generar portada</button>
       </section>}
       <section><button disabled={busy||!!upload} onClick={()=>{if(window.confirm("¿Eliminar este draft y sus archivos? Esta acción no se puede deshacer."))void action(async()=>{
