@@ -12,7 +12,8 @@ import { Readable } from "node:stream";
 // Must target a dedicated disposable test database. No tables are dropped.
 async function main() {
   if (!process.env.TEST_DATABASE_URL) throw new Error("TEST_DATABASE_URL required");
-  const { db, pool } = createConnection({ ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL });
+  const testEnv = { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL };
+  const { db, pool } = createConnection(testEnv);
   try {
     await migrate(db, { migrationsFolder: "src/db/migrations" });
     await migrate(db, { migrationsFolder: "src/db/migrations" });
@@ -45,7 +46,7 @@ async function main() {
       await client.query("ROLLBACK");
       const rolledBack = await client.query("SELECT id FROM drafts WHERE id=$1", [draft.rows[0].id]);
       assert.equal(rolledBack.rowCount, 0);
-      const queueBoss = bossFromEnv(process.env, true);
+      const queueBoss = bossFromEnv(testEnv, true);
       queueBoss.on("error", () => {});
       try {
         await queueBoss.start();
