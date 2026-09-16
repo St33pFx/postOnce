@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node scripts/dev-local.mjs",
+    "dev:local:down": "node scripts/dev-local-down.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

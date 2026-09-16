@@ -49,3 +49,19 @@ No forman parte de la V1 analytics, scheduling, generación de captions o hashta
 - Mantener los cambios pequeños y verificables por fases.
 - Consultar la documentación oficial y actual para capacidades de APIs externas.
 - No implementar capacidades que la integración real no pueda ejecutar.
+## Desarrollo local
+
+En Windows PowerShell:
+
+```powershell
+npm install
+copy .env.local.example .env.local
+npm run dev:local
+```
+
+El comando comprueba Docker Desktop, levanta PostgreSQL 17 y SeaweedFS 4.28,
+aplica migraciones y arranca Next.js. Abre `http://localhost:3000`, entra en
+`/login` y pulsa **Entrar en modo local** (marcado **Solo desarrollo**). La
+sesión usa las tablas y cookie reales de Better Auth y redirige a `/drafts`.
+Este flujo sólo existe con `NODE_ENV=development`, `POSTONCE_DEV_LOGIN=1` y
+host loopback. Para detener los servicios: `npm run dev:local:down`.

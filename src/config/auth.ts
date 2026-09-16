@@ -1,5 +1,5 @@
 export function authConfig(env: Record<string, string | undefined>) {
-  for (const name of ["BETTER_AUTH_URL", "BETTER_AUTH_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
+  for (const name of ["BETTER_AUTH_URL", "BETTER_AUTH_SECRET"]) {
     if (!env[name]?.trim()) throw new Error(`Missing ${name}`);
   }
   let url: URL;
@@ -10,6 +10,8 @@ export function authConfig(env: Record<string, string | undefined>) {
     throw new Error("Invalid BETTER_AUTH_URL");
   }
   if (env.BETTER_AUTH_SECRET!.length < 32) throw new Error("Invalid BETTER_AUTH_SECRET");
+  const localDev = env.NODE_ENV === "development" && env.POSTONCE_DEV_LOGIN === "1" && ["localhost", "127.0.0.1"].includes(url.hostname);
+  if (!localDev && (!env.GOOGLE_CLIENT_ID?.trim() || !env.GOOGLE_CLIENT_SECRET?.trim())) throw new Error("Missing GOOGLE_CLIENT_ID");
   return { baseURL: url.origin, secret: env.BETTER_AUTH_SECRET!,
-    clientId: env.GOOGLE_CLIENT_ID!, clientSecret: env.GOOGLE_CLIENT_SECRET!, secure: url.protocol === "https:" };
+    clientId: env.GOOGLE_CLIENT_ID ?? "local-dev-client", clientSecret: env.GOOGLE_CLIENT_SECRET ?? "local-dev-secret", secure: url.protocol === "https:" };
 }
