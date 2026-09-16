@@ -105,7 +105,7 @@ export class ConnectionService {
     return this.vault.decrypt(row.tokenEnvelope, row);
   }
 
-  /** Consent does not mean preflight success: revalidation stays required. */
+  /** Explicitly validates the selected binding against the current connection revision. */
   async confirmBinding(userId: string, draftId: string, platform: Platform, id: string, revision: number) {
     await this.db.transaction(async (tx) => {
       await tx.select().from(postonceUsers).where(eq(postonceUsers.id, userId)).for("update");
@@ -115,9 +115,9 @@ export class ConnectionService {
         eq(connections.revision, revision), eq(connections.status, "connected")));
       if (!draft || !connection || (connection.expiresAt && connection.expiresAt <= new Date())) throw new Error("Resource unavailable");
       await tx.insert(draftConnections).values({ draftId, userId, platform, connectionId: id,
-        confirmedRevision: revision, requiresRevalidation: true, requiresConfirmation: false })
+        confirmedRevision: revision, requiresRevalidation: false, requiresConfirmation: false })
         .onConflictDoUpdate({ target: [draftConnections.draftId, draftConnections.platform],
-          set: { connectionId: id, confirmedRevision: revision, requiresRevalidation: true, requiresConfirmation: false } });
+          set: { connectionId: id, confirmedRevision: revision, requiresRevalidation: false, requiresConfirmation: false } });
     });
   }
 }

@@ -44,3 +44,11 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");page.once("dialog",d=>d.accept());await page.getByRole("button",{name:"Eliminar draft y media"}).click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
 });
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
+test("platform selection and preflight show per-destination readiness",async({page,context})=>{
+  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:"Crear draft"}).click();
+  await page.getByLabel("Seleccionar instagram").check();await page.getByLabel("Seleccionar tiktok").check();await page.getByLabel("Seleccionar youtube").check();
+  await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
+  await page.getByRole("button",{name:"Ejecutar preflight"}).click();
+  await expect(page.getByLabel("Resultado global")).toHaveText(/NotReady/);await expect(page.getByLabel("Resultado instagram")).toContainText("NotReady");await expect(page.getByLabel("Resultado tiktok")).toContainText("NotReady");await expect(page.getByLabel("Resultado youtube")).toContainText("NotReady");
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+});

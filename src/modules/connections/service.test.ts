@@ -59,7 +59,7 @@ describe("owner-scoped connection lifecycle", () => {
     const [confirmed] = await embedded.select().from(draftConnections);
     expect(confirmed.connectionId).toBe(id);
     expect(confirmed.requiresConfirmation).toBe(false);
-    expect(confirmed.requiresRevalidation).toBe(true);
+    expect(confirmed.requiresRevalidation).toBe(false);
     const history = await embedded.select().from(connections);
     expect(history.find((row) => row.id === old.id)?.remoteAccountId).toBe("channel-a");
     expect(history.find((row) => row.id === old.id)?.tokenEnvelope).toBeNull();

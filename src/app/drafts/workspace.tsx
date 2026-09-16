@@ -4,11 +4,13 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Autosave, type SaveStatus } from "../../modules/drafts/autosave";
 import type { CoverState, MediaMetadata } from "../../modules/media/model";
+import { PlatformEditor } from "./platform-editor";
+import { parseConfigurations, type PlatformConfigurations } from "../../modules/platforms/configuration";
 import { api, uploadFile } from "./client-api";
 type Draft={id:string;caption:string|null;version:number;videoId:string|null;cover:CoverState|null;updatedAt:string};
 type Asset={id:string;kind:string;status:string;size:number;partSize:number;metadata:MediaMetadata|null;recipe:{sourceId:string}|null;error:string|null};
-type Editable={caption:string;videoId:string|null;cover:CoverState|null;platformConfig:Record<string,unknown>};
-type Open={draft:Draft & {platformConfig?:Record<string,unknown>};assets:Asset[];usage:{used:number;limit:number};limits:{video:number;image:number}};
+type Editable={caption:string;videoId:string|null;cover:CoverState|null;platformConfig:PlatformConfigurations};
+type Open={draft:Draft & {platformConfig?:PlatformConfigurations};assets:Asset[];usage:{used:number;limit:number};limits:{video:number;image:number}};
 const labels:Record<SaveStatus,string>={saved:"Guardado en el servidor",pending:"Cambios pendientes",saving:"Guardando…",conflict:"Conflicto: existe otra versión",error:"No se pudo guardar"};
 const assetLabels:Record<string,string>={initiating:"Iniciando upload",uploading:"Upload pendiente",uploaded:"Pendiente de validación",processing:"Procesando…",ready:"Validado",failed:"Falló la validación",abandoned:"Cancelado; limpieza pendiente",deleting:"Eliminación pendiente"};
 const bytes=(n:number)=>`${(n/1_000_000).toFixed(1)} MB`;
@@ -57,7 +59,7 @@ export function DraftWorkspace(){
   async function select(id:string,discard=false){
     if(!discard){await saver.current?.flush();if(saver.current&&saver.current.status!=="saved"&&!window.confirm("Hay cambios sin guardar. ¿Descartarlos y abrir otro draft?"))return;}
     const data=await api<Open>(`/api/drafts/${id}`);
-    saver.current?.dispose();setOpen(data);setEdit({caption:data.draft.caption??"",videoId:data.draft.videoId,cover:data.draft.cover,platformConfig:data.draft.platformConfig??{}});setStatus("saved");setError("");setUrls({});
+    saver.current?.dispose();setOpen(data);setEdit({caption:data.draft.caption??"",videoId:data.draft.videoId,cover:data.draft.cover,platformConfig:parseConfigurations(data.draft.platformConfig??{})});setStatus("saved");setError("");setUrls({});
     saver.current=new Autosave(data.draft.version,async(value,version)=>{
       const saved=await api<Draft>(`/api/drafts/${id}`,"PATCH",{...value,version});void listDrafts();return saved;
     },setStatus);
@@ -90,6 +92,7 @@ export function DraftWorkspace(){
         <button onClick={()=>{if(window.confirm("¿Descartar los cambios locales y cargar la versión del servidor?"))void action(()=>select(open.draft.id,true));}}>Cargar versión del servidor</button></div>}
       {status==="error"&&<button onClick={()=>void saver.current?.flush()}>Reintentar guardado</button>}
       <label>Caption general<textarea maxLength={20000} value={edit.caption} onChange={e=>change({...edit,caption:e.target.value})}/></label>
+      <PlatformEditor key={open.draft.id} draftId={open.draft.id} caption={edit.caption} config={edit.platformConfig} onChange={platformConfig=>change({...edit,platformConfig})} save={async()=>{await saver.current?.flush();if(saver.current?.status!=="saved")throw new Error("Guarda o resuelve el conflicto antes de preflight");}}/>
       <button onClick={()=>void saver.current?.flush()}>Guardar ahora</button>
       <p>Media activa y reservada: {bytes(open.usage.used)} de {bytes(open.usage.limit)}.</p>
       <section><h2>Video e imágenes</h2><p>MP4/MOV hasta {bytes(open.limits.video)}. JPEG/PNG/WebP hasta {bytes(open.limits.image)}. El archivo pasa una validación antes de poder seleccionarlo.</p>
