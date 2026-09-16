@@ -6,7 +6,10 @@ for (const [path, status] of [["/", 200], ["/login", 200], ["/api/health/live", 
   const response = await fetch(new URL(path, base), { signal: AbortSignal.timeout(10000) });
   assert.equal(response.status, status, path);
   const body = await response.text();
-  if (path === "/") assert.match(body, /No hay integraciones simuladas/);
+  if (path === "/") {
+    assert.match(body, /Prepara tus publicaciones en un solo lugar/);
+    assert.match(body, /Iniciar sesión/);
+  }
   if (path.includes("health")) {
     assert.equal(response.headers.get("Cache-Control"), "no-store");
     assert.doesNotMatch(body, /postgres(ql)?:\/\//);
