@@ -10,8 +10,8 @@ export async function testStorage() {
   const accessKeyId="test"+randomBytes(8).toString("hex"),secretAccessKey=randomBytes(24).toString("hex");
   const endpoint="http://127.0.0.1:18333",bucket="postonce-test";
   const processHandle=spawn(process.env.WEED_PATH??"weed",["mini",`-dir=${directory}`,"-ip=127.0.0.1","-ip.bind=127.0.0.1",
-    "-master.port=19333","-volume.port=19340","-filer.port=18888","-s3.port=18333","-s3.port.iceberg=0","-s3.port.lance=0",
-    "-admin.ui=false","-webdav=false","-master.telemetry=false","-volume.max=4","-master.volumeSizeLimitMB=32",`-bucket=${bucket}`],
+    "-master.port=19333","-volume.port=19340","-filer.port=18888","-s3.port=18333",
+    "-admin.ui=false","-webdav=false","-volume.max=4","-master.volumeSizeLimitMB=32",`-bucket=${bucket}`],
     {windowsHide:true,stdio:["ignore","ignore","pipe"],env:{...process.env,AWS_ACCESS_KEY_ID:accessKeyId,AWS_SECRET_ACCESS_KEY:secretAccessKey}});
   let failure:Error|undefined;
   processHandle.on("error",e=>{failure=e;});
