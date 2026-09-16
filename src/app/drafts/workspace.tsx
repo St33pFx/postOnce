@@ -85,9 +85,8 @@ export function DraftWorkspace(){
   async function saveForServerAction(){await saver.current?.flush();if(saver.current?.status!=="saved")throw new Error("Guarda o resuelve el conflicto antes de continuar");}
   const base=open?.assets.find(a=>a.id===edit.cover?.baseId);
   const video=open?.assets.find(a=>a.id===edit.videoId);
-  return <main className="draft-workspace"><nav><Link href="/account">Cuenta</Link><span>Drafts y media</span></nav>
-    <h1>Tus drafts</h1><p>El trabajo marcado como guardado está disponible al iniciar sesión en otro dispositivo.</p>
-    <button disabled={busy||!!upload} onClick={()=>void action(async()=>{await saver.current?.flush();if(saver.current&&saver.current.status!=="saved")throw new Error("Resuelve los cambios pendientes primero");const d=await api<Draft>("/api/drafts","POST");await listDrafts();await select(d.id);})}>Crear draft</button>
+  return <main className="draft-workspace"><nav className="top-nav"><Link href="/drafts" className="active">Drafts</Link><Link href="/account">Cuenta</Link></nav>
+    <header className="page-header"><div><p className="eyebrow">POSTONCE / DRAFTS</p><h1>Tus publicaciones</h1><p className="lede">Prepara una idea, revisa tus destinos y publícala cuando todo esté listo.</p></div><button disabled={busy||!!upload} onClick={()=>void action(async()=>{await saver.current?.flush();if(saver.current&&saver.current.status!=="saved")throw new Error("Resuelve los cambios pendientes primero");const d=await api<Draft>("/api/drafts","POST");await listDrafts();await select(d.id);})}>Nueva publicación</button></header>
     <div className="draft-layout"><aside aria-label="Tus drafts"><ul>{list.map(d=><li key={d.id}><button disabled={!!upload||busy} aria-current={open?.draft.id===d.id} onClick={()=>void action(()=>select(d.id))}>{d.caption?.slice(0,50)||"Draft sin caption"}<small>{new Date(d.updatedAt).toLocaleString()}</small></button></li>)}</ul></aside>
     {open&&<article><h2>Editar draft</h2><p role="status" aria-live="polite">{labels[status]}</p>
       {status==="conflict"&&<div className="notice"><p>Tu texto local sigue en el editor. Revisa la versión del servidor y copia lo que quieras conservar antes de cargarla.</p><blockquote>{open.draft.caption||"Sin caption"}</blockquote>
@@ -98,9 +97,9 @@ export function DraftWorkspace(){
       <PublishingPanel draftId={open.draft.id} save={saveForServerAction}/>
       <button onClick={()=>void saver.current?.flush()}>Guardar ahora</button>
       <p>Media activa y reservada: {bytes(open.usage.used)} de {bytes(open.usage.limit)}.</p>
-      <section><h2>Video e imágenes</h2><p>MP4/MOV hasta {bytes(open.limits.video)}. JPEG/PNG/WebP hasta {bytes(open.limits.image)}. El archivo pasa una validación antes de poder seleccionarlo.</p>
-        <label>Subir video<input disabled={busy||!!upload} type="file" accept="video/mp4,video/quicktime,.mp4,.mov" onChange={e=>{const f=e.target.files?.[0];if(f)void action(()=>startUpload(f,"original_video"));e.target.value="";}}/></label>
-        <label>Subir imagen<input disabled={busy||!!upload} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const f=e.target.files?.[0];if(f)void action(()=>startUpload(f,"uploaded_image"));e.target.value="";}}/></label>
+      <section><h2>Media</h2><p>MP4/MOV hasta {bytes(open.limits.video)}. JPEG/PNG/WebP hasta {bytes(open.limits.image)}. Los archivos se validan antes de estar listos.</p>
+        <div className="upload-grid"><label className="dropzone"><strong>Subir video</strong><span>Arrastra un archivo o selecciónalo desde tu dispositivo.</span><b>Seleccionar video</b><input aria-label="Subir video" disabled={busy||!!upload} type="file" accept="video/mp4,video/quicktime,.mp4,.mov" onChange={e=>{const f=e.target.files?.[0];if(f)void action(()=>startUpload(f,"original_video"));e.target.value="";}}/></label>
+        <label className="dropzone"><strong>Subir imagen</strong><span>Una imagen para portada, thumbnail o frame.</span><b>Seleccionar imagen</b><input aria-label="Subir imagen" disabled={busy||!!upload} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>{const f=e.target.files?.[0];if(f)void action(()=>startUpload(f,"uploaded_image"));e.target.value="";}}/></label></div>
         {upload&&<div><progress max={upload.total} value={upload.bytes}/><p>{bytes(upload.bytes)} / {bytes(upload.total)} transferidos</p><button onClick={()=>controller.current?.abort()}>Pausar upload</button></div>}
         <ul className="asset-list">{open.assets.map(a=><li key={a.id}><strong>{a.kind}</strong> · {assetLabels[a.status]??a.status} · {bytes(a.size)}
           {a.metadata&&<small>{a.metadata.width} × {a.metadata.height}{a.metadata.duration?` · ${a.metadata.duration.toFixed(2)} s · ${a.metadata.videoCodec}`:""}</small>}

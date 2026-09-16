@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export function DisconnectButton({ id }: { id: string }) {
   const [error, setError] = useState(false);
-  return <><button onClick={async () => {
+  return <><button className="secondary" onClick={async () => {
     if (!window.confirm("¿Desconectar esta cuenta de PostOnce? El historial se conserva.")) return;
     try {
       const response = await fetch(`/api/connections/${id}`, { method: "DELETE" });

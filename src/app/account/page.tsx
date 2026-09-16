@@ -10,9 +10,11 @@ import { ConfirmAccountButton, DisconnectButton } from "./connection-controls";
 
 export const dynamic = "force-dynamic";
 export default async function Account() {
+  const requestHeaders = await headers();
   let user;
-  try { user = await currentUser(await headers()); } catch { redirect("/login"); }
+  try { user = await currentUser(requestHeaders); } catch { redirect("/login"); }
   if (!user) redirect("/login");
+  const profile = await identityServices().auth.api.getSession({ headers: requestHeaders });
   const db = identityServices().db;
   const accounts = await db.select({ id: connections.id, platform: connections.platform, displayName: connections.displayName,
     remoteAccountId: connections.remoteAccountId, status: connections.status, expiresAt: connections.expiresAt,
@@ -22,23 +24,22 @@ export default async function Account() {
     .innerJoin(connections, eq(connections.id, draftConnections.connectionId))
     .where(and(eq(draftConnections.userId, user.id), eq(draftConnections.requiresConfirmation, true)));
   const labels = { disconnected: "Desconectada", connected: "Conectada", requires_reconnection: "Requiere reconexión", ineligible: "No elegible" };
-  return <main><h1>Tu cuenta de PostOnce</h1><p>Sesión iniciada.</p><Link href="/drafts">Abrir mis drafts</Link>
-    <p>Las conexiones de Instagram, TikTok y YouTube son independientes de este login.
-      Sus adapters OAuth todavía no están disponibles; no se simula ninguna conexión.</p>
-    {platforms.map((platform) => {
+  const descriptions = { instagram: "Conecta una cuenta profesional para publicar Reels.", tiktok: "Conecta TikTok para publicar con tus preferencias de privacidad.", youtube: "Conecta tu canal para publicar videos y miniaturas." };
+  const titles = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube" };
+  return <main className="app-shell"><header className="page-header"><div><p className="eyebrow">POSTONCE / CUENTA</p><h1>Cuenta</h1><p className="lede">Administra tus conexiones de publicación.</p></div><nav className="top-nav"><Link href="/drafts">Drafts</Link><Link className="active" href="/account">Cuenta</Link></nav></header>
+    <section className="profile-card"><div className="avatar">{profile?.user.name?.slice(0,1).toUpperCase() ?? "P"}</div><div><p className="eyebrow">PERFIL</p><h2>{profile?.user.name ?? "Tu cuenta"}</h2><p>{profile?.user.email ?? "Sesión iniciada con Google"}</p></div></section>
+    <section className="connections-section"><div className="section-heading"><div><p className="eyebrow">CANALES</p><h2>Cuentas conectadas</h2></div><Link className="button secondary" href="/drafts">Volver a drafts</Link></div><div className="connection-grid">{platforms.map((platform) => {
       const account = accounts.find((row) => row.platform === platform);
       const status = account?.status === "connected" && account.expiresAt && account.expiresAt <= new Date()
         ? "requires_reconnection" : account?.status ?? "disconnected";
-      return <section key={platform}><h2>{platform}</h2><p>{labels[status]}</p>
-        {account && <p>{account.displayName ?? account.remoteAccountId} · {account.remoteAccountId}</p>}
-        <p>Conectar/reconectar no está disponible hasta integrar el OAuth real de esta plataforma.</p>
-        {account && status !== "disconnected" && <DisconnectButton id={account.id} />}
+      return <article className="connection-card" key={platform}><div className="connection-card-head"><div className={`platform-mark ${platform}`}>{platform.slice(0,1).toUpperCase()}</div><div><h3>{titles[platform]}</h3><p>{descriptions[platform]}</p></div><span className={`status-badge ${status}`}>{labels[status]}</span></div>
+        {account && <p className="connection-identity">{account.displayName ?? account.remoteAccountId}</p>}
+        <div className="connection-actions">{(!account || status !== "connected") && <Link className="button primary" href={`/api/connections/${platform}/start`}>{status === "requires_reconnection" ? "Reconectar" : `Conectar ${titles[platform]}`}</Link>}
+        {account && status !== "disconnected" && <DisconnectButton id={account.id} />}</div>
         {account && status === "connected" && bindings.filter((row) => row.platform === platform).map((binding) =>
-          <div key={binding.draftId}><p>Draft {binding.draftId}: cuenta anterior {binding.oldRemoteAccountId};
-            cuenta propuesta {account.remoteAccountId}. Requiere confirmación y revalidación.</p>
+          <div className="connection-warning" key={binding.draftId}><p>Esta cuenta cambió para un draft y requiere confirmación.</p>
             <ConfirmAccountButton draftId={binding.draftId} platform={platform} connectionId={account.id} revision={account.revision} />
           </div>)}
-      </section>;
-    })}
-    <LogoutButton /></main>;
+      </article>;
+    })}</div></section><LogoutButton /></main>;
 }

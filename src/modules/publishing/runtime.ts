@@ -6,6 +6,7 @@ import { drafts } from "../../db/schema";
 import type { DB } from "../drafts/service";
 import { storageFromEnv, type ObjectStorage } from "../media/storage";
 import { vaultFromEnv, type TokenVault } from "../connections/vault";
+import { refreshAccessToken } from "../connections/oauth";
 import { parseConfigurations } from "../platforms/configuration";
 import { publishingAdapters, type PublishAdapter, type PublishAsset, type PublishInput, type PublishingTransport } from "./adapters";
 
@@ -33,7 +34,21 @@ export function productionResolver(db: DB, options: { storage?: ObjectStorage; v
     if (!binding) throw new Error("Cuenta no disponible");
     const [connection] = await db.select().from(connections).where(and(eq(connections.id, binding.connectionId), eq(connections.userId, batch.userId), eq(connections.platform, attempt.platform)));
     if (!connection?.tokenEnvelope || connection.status !== "connected" || !connection.active) throw new Error("Cuenta no disponible");
-    const tokens = vault.decrypt(connection.tokenEnvelope, connection);
+    let tokens = vault.decrypt(connection.tokenEnvelope, connection);
+    if (connection.expiresAt && connection.expiresAt.getTime() <= Date.now() + 5 * 60_000) {
+      if (!tokens.refreshToken) {
+        await db.update(connections).set({ status: "requires_reconnection", updatedAt: new Date() }).where(eq(connections.id, connection.id));
+        throw new Error("Cuenta requiere reconexión");
+      }
+      try {
+        const refreshed = await refreshAccessToken(connection.platform, tokens.refreshToken, options.http);
+        tokens = { accessToken: refreshed.accessToken, refreshToken: refreshed.refreshToken };
+        await db.update(connections).set({ tokenEnvelope: vault.encrypt(tokens, connection), expiresAt: refreshed.expiresAt ?? null, status: "connected", updatedAt: new Date() }).where(eq(connections.id, connection.id));
+      } catch {
+        await db.update(connections).set({ status: "requires_reconnection", updatedAt: new Date() }).where(eq(connections.id, connection.id));
+        throw new Error("Cuenta requiere reconexión");
+      }
+    }
     const [video] = await db.select().from(media).where(and(eq(media.id, draft.videoId), eq(media.userId, batch.userId), eq(media.draftId, draft.id)));
     if (!video) throw new Error("Video no disponible");
     const rows = await db.select().from(media).where(and(eq(media.userId, batch.userId), eq(media.draftId, draft.id))).orderBy(desc(media.createdAt));
