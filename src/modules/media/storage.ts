@@ -22,9 +22,12 @@ export class S3Storage implements ObjectStorage {
     if (!result.UploadId) throw new Error("Storage unavailable");
     return result.UploadId;
   }
-  signPart(key: string, upload: string, number: number, size: number, checksum: string) {
+  signPart(key: string, upload: string, number: number, size: number) {
     return getSignedUrl(this.client, new UploadPartCommand({ Bucket: this.bucket, Key: key, UploadId: upload,
-      PartNumber: number, ContentLength: size, ChecksumSHA256: checksum }), { expiresIn: this.ttl });
+      // The application stores the SHA-256 checksum for resumability. Do not add
+      // ChecksumSHA256 here: R2's UploadPart API does not accept that request
+      // parameter, and the browser upload intentionally sends no signed checksum header.
+      PartNumber: number, ContentLength: size }), { expiresIn: this.ttl });
   }
   async parts(key: string, upload: string) {
     const out: Part[] = [];

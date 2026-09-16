@@ -1,0 +1,11 @@
+[build]
+builder = "railpack"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+preDeployCommand = ["npm run db:migrate", "npm run jobs:migrate"]
+startCommand = "npm start"
+healthcheckPath = "/api/health/live"
+healthcheckTimeout = 120
+restartPolicyType = "ALWAYS"
+restartPolicyMaxRetries = 10

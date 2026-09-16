@@ -36,6 +36,7 @@ PostOnce es también un proyecto de aprendizaje de **Spec-Driven Development**. 
 - `docs/development.md` — instalación, migraciones y checks
 - `docs/phase-2-setup.md` — Google Sign-In, secretos, conexiones y configuración externa
 - `docs/phase-5-deployment.md` — publicación durable, worker y despliegue remoto
+- `docs/production-deployment.md` — Railway, PostgreSQL administrado y Cloudflare R2
 
 ## Alcance actual
 
