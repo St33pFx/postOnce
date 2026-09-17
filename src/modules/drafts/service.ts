@@ -1,9 +1,10 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drafts, postonceUsers } from "../../db/schema";
 import { media } from "../../db/media-schema";
 import { coverState, DomainError, uuid } from "../media/model";
 import { parseConfigurations } from "../platforms/configuration";
+import { publishBatch } from "../../db/publishing-schema";
 export type DB = NodePgDatabase<typeof import("../../db/schema")>;
 export class DraftService {
   constructor(public db: DB) {}
@@ -31,8 +32,23 @@ export class DraftService {
         if (!asset || (video ? asset.kind !== "original_video" : !["uploaded_image", "extracted_frame"].includes(asset.kind))) throw new DomainError(400, "Media no disponible");
         if (!video && asset.kind === "extracted_frame" && asset.recipe?.sourceId !== input.videoId) throw new DomainError(409, "Selecciona una portada del video actual");
       }
-      return (await tx.update(drafts).set({ caption: input.caption, videoId: input.videoId, cover, platformConfig: platformConfig ?? before.platformConfig,
+      const saved = (await tx.update(drafts).set({ caption: input.caption, videoId: input.videoId, cover, platformConfig: platformConfig ?? before.platformConfig,
         version: sql`${drafts.version} + 1`, updatedAt: new Date() }).where(eq(drafts.id, id)).returning())[0];
+      // Replaced media is retained while a publish batch is active. Otherwise it
+      // enters the existing maintenance cleanup flow once no draft/recipe points
+      // at it; published batch semantics are deliberately untouched.
+      const replaced = [before.videoId, coverState(before.cover)?.baseId].filter((assetId): assetId is string => !!assetId && assetId !== input.videoId && assetId !== cover?.baseId);
+      if (replaced.length) {
+        const [activeBatch] = await tx.select({id:publishBatch.id}).from(publishBatch).where(and(eq(publishBatch.userId,userId),eq(publishBatch.draftId,id),inArray(publishBatch.status,["Pending","Publishing"]))).limit(1);
+        if (!activeBatch) {
+          const rows = await tx.select().from(media).where(and(eq(media.userId,userId),eq(media.draftId,id),isNull(media.deleteAfter)));
+          for (const assetId of new Set(replaced)) {
+            const referenced = rows.some(row => row.id !== assetId && row.recipe?.sourceId === assetId);
+            if (!referenced) await tx.update(media).set({status:"deleting",deleteAfter:new Date(),updatedAt:new Date()}).where(and(eq(media.id,assetId),eq(media.userId,userId),isNull(media.deleteAfter)));
+          }
+        }
+      }
+      return saved;
     });
   }
   async remove(userId: string, id: string, version: number) {

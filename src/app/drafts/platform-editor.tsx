@@ -6,46 +6,32 @@ import type { preflight } from "../../modules/platforms/preflight";
 import { api } from "./client-api";
 type Result = Awaited<ReturnType<typeof preflight>>;
 type Connection = {id:string;platform:Platform;remoteAccountId:string;displayName:string|null;status:string;revision:number};
+const names:{[key in Platform]:string} = {youtube:"YouTube",instagram:"Instagram",tiktok:"TikTok"};
+const statusText = (status:string) => status === "Ready" ? "Todo listo para publicar" : "Revisa los datos pendientes";
+const issueText = (message:string) => message === "video_missing" ? "Falta seleccionar un video" : message === "binding_missing" ? "Conecta esta cuenta para continuar" : message === "account_changed" ? "La cuenta cambió; confirma la conexión" : message;
+type UiConfig = PlatformConfiguration & {title?:string;privacy?:string;descriptionOverride?:string;override?:string;madeForKids?:boolean;containsSyntheticMedia?:boolean;shareToFeed?:boolean;allowComments?:boolean;allowDuet?:boolean;allowStitch?:boolean;isAigc?:boolean};
+
 export function PlatformEditor({draftId,caption,config,onChange,save}:{draftId:string;caption:string;config:PlatformConfigurations;onChange:(c:PlatformConfigurations)=>void;save:()=>Promise<void>}) {
- const [accounts,setAccounts]=useState<Connection[]>([]),[result,setResult]=useState<Result|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false),[stale,setStale]=useState(false);
+ const [accounts,setAccounts]=useState<Connection[]>([]),[result,setResult]=useState<Result|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false),[stale,setStale]=useState(false),[advanced,setAdvanced]=useState<Record<string,boolean>>({});
  useEffect(()=>{let live=true;void api<Connection[]>("/api/connections").then(v=>{if(live)setAccounts(v);}).catch(()=>{if(live)setError("No se pudieron cargar las cuentas");});return()=>{live=false;};},[draftId]);
- function change(c:PlatformConfiguration){onChange({...config,[c.platform]:c});setStale(true);}
+ function change(c:{platform:Platform;enabled:boolean;[key:string]:unknown}){onChange({...config,[c.platform]:c as PlatformConfiguration});setStale(true);}
  async function run(){setBusy(true);setError("");try{await save();setResult(await api<Result>(`/api/drafts/${draftId}/preflight`,"POST",{}));setStale(false);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  async function bind(c:Connection){setBusy(true);setError("");try{await save();await api("/api/connections/confirm","POST",{draftId,platform:c.platform,connectionId:c.id,revision:c.revision});setResult(null);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
- return <section aria-label="Configuración de plataformas"><h2>Destinos y preflight</h2><p>Confirma la cuenta de cada destino y actualiza las capacidades antes de configurar TikTok.</p>
-  {(["instagram","tiktok","youtube"] as const).map(platform=>{
-   const c:PlatformConfiguration=config[platform]??(platform==="youtube"?{platform,enabled:false,title:""}:{platform,enabled:false});
-   const account=accounts.find(a=>a.platform===platform),r=result?.results.find(x=>x.platform===platform);
-   const override=c.platform==="youtube"?c.descriptionOverride:c.override;
-   const textLabel=c.platform==="youtube"?"Descripción":"Caption";
+ return <section className="editor-section destinations" aria-label="Destinos y preflight"><div className="section-heading"><div><p className="eyebrow">03</p><h2>Destinos</h2></div><button type="button" disabled={busy} onClick={()=>void run()}>Comprobar estado</button></div><p className="section-help">Activa solo los canales donde quieres publicar.</p>
+  <div className="destination-list">{(["youtube","instagram","tiktok"] as const).map(platform=>{
+   const c = (config[platform]??(platform==="youtube"?{platform,enabled:false,title:""}:{platform,enabled:false})) as UiConfig;
+   const account=accounts.find(a=>a.platform===platform),r=result?.results.find(x=>x.platform===platform), isAdvanced=!!advanced[platform];
+   const override=c.platform==="youtube"?c.descriptionOverride:c.override, textLabel=c.platform==="youtube"?"Descripción":"Caption";
    const setOverride=(value:string|undefined)=>change(c.platform==="youtube"?{...c,descriptionOverride:value}:{...c,override:value});
-   return <fieldset key={platform} aria-label={platform} disabled={busy}>
-    <legend>{platform}</legend><label><input type="checkbox" checked={c.enabled} onChange={e=>change({...c,enabled:e.target.checked})}/>Seleccionar {platform}</label>
-    <p>Cuenta: {account?.displayName??account?.remoteAccountId??"Sin cuenta conectada"} · {account?.status??"disconnected"}</p>
-    {account&&<><p>Identidad: {account.remoteAccountId}</p><button type="button" disabled={account.status!=="connected"} onClick={()=>void bind(account)}>Confirmar cuenta para {platform}</button></>}
-    {c.enabled&&<>
-     <p>{textLabel} general heredado: {caption||"(vacío)"}</p>
-     <label><input type="checkbox" checked={override!==undefined} onChange={e=>setOverride(e.target.checked?caption:undefined)}/>Usar override de {platform}</label>
-     {override!==undefined&&<label>{textLabel} específico de {platform}<textarea value={override} maxLength={20000} onChange={e=>setOverride(e.target.value)}/></label>}
-     <p>Valor efectivo: {override??caption}</p>
-     {c.platform==="instagram"&&<label>Compartir Reel en feed<select value={c.shareToFeed===undefined?"":String(c.shareToFeed)} onChange={e=>change({...c,shareToFeed:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin elegir</option><option value="true">Sí</option><option value="false">No</option></select></label>}
-     {c.platform==="tiktok"&&<>
-      <p>Las opciones se obtienen al ejecutar preflight; no se elige privacidad automáticamente.</p>
-      <label>Privacidad de TikTok<select value={c.privacy??""} disabled={!r?.capabilities?.privacy.available} onChange={e=>change({...c,privacy:e.target.value||undefined})}><option value="">Seleccionar</option>{r?.capabilities?.privacy.options?.map(p=><option key={p} value={p}>{p}</option>)}</select></label>
-      {(["allowComments","allowDuet","allowStitch"] as const).map((key,index)=><label key={key}><input type="checkbox" disabled={!r?.capabilities?.[["comments","duet","stitch"][index]].available} checked={c[key]===true} onChange={e=>change({...c,[key]:e.target.checked})}/>{["Permitir comentarios","Permitir Duet","Permitir Stitch"][index]}</label>)}
-      <label>Contenido generado por IA<select value={c.isAigc===undefined?"":String(c.isAigc)} onChange={e=>change({...c,isAigc:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin declarar</option><option value="false">No</option><option value="true">Sí</option></select></label>
-     </>}
-     {c.platform==="youtube"&&<>
-      <label>Título de YouTube<input value={c.title} onChange={e=>change({...c,title:e.target.value})}/></label>
-      <label>Privacidad de YouTube<select value={c.privacy??""} onChange={e=>change({...c,privacy:e.target.value===""?undefined:e.target.value as "public"|"private"|"unlisted"})}><option value="">Seleccionar</option><option value="public">Público</option><option value="private">Privado</option><option value="unlisted">No listado</option></select></label>
-      {(["madeForKids","containsSyntheticMedia"] as const).map((key,index)=><label key={key}>{["Contenido para niños","Contenido sintético alterado"][index]}<select value={c[key]===undefined?"":String(c[key])} onChange={e=>change({...c,[key]:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Seleccionar</option><option value="false">No</option><option value="true">Sí</option></select></label>)}
-     </>}
-     {r&&<div aria-label={`Resultado ${platform}`}><strong>{stale?"Revalidación requerida":r.status}</strong><p>{r.account?.displayName}</p><ul>{r.issues.map((reason,i)=><li key={i}>{reason.code}: {reason.message}</li>)}</ul><dl>{Object.entries(r.capabilities??{}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value.available?"Disponible":"No disponible"}{value.options?`: ${value.options.join(", ")}`:""}</dd></div>)}</dl></div>}
-    </>}
-   </fieldset>;
-  })}
-  <button type="button" disabled={busy} onClick={()=>void run()}>Ejecutar preflight</button>
-  {result&&<p aria-label="Resultado global">Global: {stale?"Revalidación requerida":result.global.ready?"Ready":"NotReady"}</p>}
-  {error&&<p role="alert">{error}</p>}
+   return <div className={`destination-row ${c.enabled?"enabled":"disabled"}`} key={platform}><div className="destination-summary"><label className="toggle-label"><input aria-label={`Seleccionar ${platform}`} type="checkbox" checked={c.enabled} onChange={e=>change({...c,enabled:e.target.checked})}/><span className="toggle" aria-hidden="true"/><strong>{names[platform]}</strong></label><span className="destination-account">{account?.status==="connected"?(account.displayName||"Cuenta conectada"):"No conectada"}</span>{c.enabled&&r&&<span className={`status-chip ${r.status.toLowerCase()}`}>{r.status==="Ready"?"Listo":"Revisar"}</span>}</div>
+    {c.enabled&&<div className="destination-details"><div className="account-line">{account?.status==="connected"?<><span>Cuenta de {names[platform]} conectada</span>{account&&<button className="text-button" type="button" disabled={busy} onClick={()=>void bind(account)}>Confirmar cuenta</button>}</>:<span>Conecta una cuenta desde Cuenta para publicar aquí.</span>}</div>
+      {platform==="youtube"&&<><label>Título de YouTube<input value={c.title} onChange={e=>change({...c,title:e.target.value})}/></label><label>Privacidad<select value={c.privacy??""} onChange={e=>change({...c,privacy:e.target.value===""?undefined:e.target.value as "public"|"private"|"unlisted"})}><option value="">Seleccionar</option><option value="public">Público</option><option value="private">Privado</option><option value="unlisted">No listado</option></select></label></>}
+      <label><input type="checkbox" checked={override!==undefined} onChange={e=>setOverride(e.target.checked?caption:undefined)}/> Personalizar {textLabel.toLowerCase()}</label>{override!==undefined&&<label>{textLabel} específico<textarea value={override} maxLength={20000} onChange={e=>setOverride(e.target.value)}/></label>}
+      <button className="text-button advanced-trigger" type="button" onClick={()=>setAdvanced(v=>({...v,[platform]:!v}))}>{isAdvanced?"Menos opciones":"Más opciones"}</button>
+      {isAdvanced&&<div className="advanced-options">{platform==="youtube"&&<><label>Contenido para niños<select value={c.madeForKids===undefined?"":String(c.madeForKids)} onChange={e=>change({...c,madeForKids:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin declarar</option><option value="false">No</option><option value="true">Sí</option></select></label><label>Contenido sintético<select value={c.containsSyntheticMedia===undefined?"":String(c.containsSyntheticMedia)} onChange={e=>change({...c,containsSyntheticMedia:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin declarar</option><option value="false">No</option><option value="true">Sí</option></select></label></>}{platform==="instagram"&&<label>Compartir Reel en feed<select value={c.shareToFeed===undefined?"":String(c.shareToFeed)} onChange={e=>change({...c,shareToFeed:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin elegir</option><option value="true">Sí</option><option value="false">No</option></select></label>}{platform==="tiktok"&&<><label>Privacidad<select value={c.privacy??""} disabled={!r?.capabilities?.privacy.available} onChange={e=>change({...c,privacy:e.target.value||undefined})}><option value="">Seleccionar</option>{r?.capabilities?.privacy.options?.map(p=><option key={p} value={p}>{p}</option>)}</select></label>{(["allowComments","allowDuet","allowStitch"] as const).map((key,index)=><label key={key}><input type="checkbox" disabled={!r?.capabilities?.[["comments","duet","stitch"][index] as "comments"|"duet"|"stitch"]?.available} checked={c[key]===true} onChange={e=>change({...c,[key]:e.target.checked})}/>{["Permitir comentarios","Permitir Duet","Permitir Stitch"][index]}</label>)}<label>Contenido generado por IA<select value={c.isAigc===undefined?"":String(c.isAigc)} onChange={e=>change({...c,isAigc:e.target.value===""?undefined:e.target.value==="true"})}><option value="">Sin declarar</option><option value="false">No</option><option value="true">Sí</option></select></label></>}</div>}
+      {r&&<details className="technical-details"><summary>Ver detalles técnicos</summary><div aria-label={`Resultado ${platform}`}><p>{statusText(r.status)}</p><ul>{r.issues.map((reason,i)=><li key={i}>{issueText(reason.message)}</li>)}</ul><dl>{Object.entries(r.capabilities??{}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value.available?"Disponible":"No disponible"}{value.options?`: ${value.options.join(", ")}`:""}</dd></div>)}</dl></div></details>}
+    </div>}</div>;
+  })}</div>
+  {result&&<p aria-label="Resultado global" className={result.global.ready&&!stale?"preflight-ready":"preflight-not-ready"}>{result.global.ready&&!stale?"Todo listo para publicar":"Falta completar algunos datos"}</p>}{error&&<p role="alert">{error}</p>}
  </section>;
 }

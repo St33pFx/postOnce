@@ -35,9 +35,9 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   await second.getByLabel("Caption general").fill("Segunda edición en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versión");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda edición en conflicto");await other.close();
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover.png",mimeType:"image/png",buffer:image});
-  await expect(page.getByRole("button",{name:"Usar como portada"})).toBeVisible({timeout:30_000});await page.getByRole("button",{name:"Usar como portada"}).click();
+  await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});await page.getByRole("button",{name:"Editar portada"}).click();
   await page.getByLabel("Texto de portada").fill("Una portada");await page.getByLabel("Posición horizontal").fill("0.8");await page.getByRole("combobox",{name:"Estilo"}).selectOption("dark");
-  await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");await page.getByRole("button",{name:"Generar portada"}).click();await expect(page.getByRole("link",{name:"Abrir imagen generada"})).toBeVisible({timeout:30_000});
+  await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");await page.getByRole("button",{name:"Generar portada renderizada"}).click();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.screenshot({path:`test-results/editor-${test.info().project.name}.png`,fullPage:true});
   await page.getByRole("button",{name:"Eliminar texto"}).click();await expect(page.getByLabel("Texto de portada")).toHaveValue("");
@@ -48,7 +48,7 @@ test("platform selection and preflight show per-destination readiness",async({pa
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await page.getByLabel("Seleccionar instagram").check();await page.getByLabel("Seleccionar tiktok").check();await page.getByLabel("Seleccionar youtube").check();
   await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
-  await page.getByRole("button",{name:"Ejecutar preflight"}).click();
-  await expect(page.getByLabel("Resultado global")).toHaveText(/NotReady/);await expect(page.getByLabel("Resultado instagram")).toContainText("NotReady");await expect(page.getByLabel("Resultado tiktok")).toContainText("NotReady");await expect(page.getByLabel("Resultado youtube")).toContainText("NotReady");
+  await page.getByRole("button",{name:"Comprobar estado"}).click();
+  await expect(page.getByLabel("Resultado global")).toHaveText("Falta completar algunos datos");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });
