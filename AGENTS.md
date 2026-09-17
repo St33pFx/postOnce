@@ -7,3 +7,41 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# PostOnce Spec-Anchored Development
+
+1. **SOURCE OF TRUTH**
+
+   Orden de autoridad:
+
+   `specs/constitution.md` → `specs/product.md` → `specs/features/*.md` → `specs/architecture.md` → `specs/implementation-plan.md` → implementación → tests.
+
+   El código no redefine silenciosamente el comportamiento especificado.
+
+2. **ANTES DE CAMBIAR CÓDIGO**
+
+   Toda tarea que cambie comportamiento debe identificar la spec, REQ-ID y Acceptance Criteria relevantes. Si existe un requisito, implementar contra él. Si no existe, actualizar primero la spec. Si contradice la spec, reportar SPEC GAP o actualizar la spec antes de implementar.
+
+3. **BUG FIXES**
+
+   Un bug es una diferencia entre comportamiento especificado y real. Para bugs cubiertos por una spec, no modificar la spec para coincidir con el bug: corregir implementación y añadir regresión.
+
+4. **TEST TRACEABILITY**
+
+   Siempre que sea razonable, los tests de comportamiento deben incluir el REQ-ID. Mantener los tests E2E focalizados cuando sea posible.
+
+5. **SPEC UPDATE RULE**
+
+   Cuando una tarea cambie comportamiento de producto, spec, implementación y test de regresión deben viajar juntos. Cambios internos sin cambio externo no necesitan modificar specs.
+
+6. **VALIDATION STRATEGY**
+
+   Ejecutar en orden: test focalizado del requisito, checks del módulo, `npm run check`, `npm run test:browser` completo cuando el cambio focalizado esté verde y CI completo una sola vez al final. Si CI falla, identificar el requisito afectado y corregir únicamente esa regresión.
+
+7. **COMPLETION**
+
+   Una tarea requiere anchor identificado, Acceptance Criteria satisfecho, test de regresión, checks verdes y CI SUCCESS.
+
+8. **PROMPT BEHAVIOR**
+
+   Los prompts pueden ser pequeños; el agente debe reconstruir el contexto leyendo las specs indicadas.

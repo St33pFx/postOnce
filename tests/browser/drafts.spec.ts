@@ -43,6 +43,20 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   await page.getByRole("button",{name:"Eliminar texto"}).click();await expect(page.getByLabel("Texto de portada")).toHaveValue("");
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");page.once("dialog",d=>d.accept());await page.getByRole("button",{name:"Eliminar draft y media"}).click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
 });
+test("REQ-CP-006: frame selector requires a valid video",async({page,context})=>{
+  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
+  await expect(page.getByRole("button",{name:"Elegir frame del video"})).not.toBeVisible();
+});
+test("REQ-CP-007: uploaded cover can be edited without a video",async({page,context})=>{
+  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
+  const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
+  await page.getByLabel("Subir imagen").setInputFiles({name:"cover-no-video.png",mimeType:"image/png",buffer:image});
+  await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});
+  await page.getByRole("button",{name:"Editar portada"}).click();
+  await expect(page.getByLabel("Texto de portada")).toBeVisible();
+  await page.getByLabel("Texto de portada").fill("Portada sin video");
+  await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
+});
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
