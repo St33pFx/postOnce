@@ -412,6 +412,20 @@ el usuario abre su configuración
 **THEN**  
 puede establecer title, description y privacy
 
+#### Scenario: Mostrar opciones avanzadas de YouTube
+
+**GIVEN**
+YouTube está seleccionado
+
+**WHEN**
+el usuario pulsa «Más opciones»
+
+**THEN**
+se muestran las declaraciones requeridas
+
+**AND**
+al pulsar «Menos opciones» vuelven a ocultarse
+
 ### REQ-PC-013 — YouTube title constraints
 
 #### Scenario: Título demasiado largo

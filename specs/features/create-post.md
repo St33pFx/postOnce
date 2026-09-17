@@ -504,6 +504,9 @@ agrega o modifica texto, estilo, tamaño o posición
 **THEN**  
 la vista previa de la portada seleccionada refleja la composición actual
 
+**AND**
+la vista previa conserva la relación de aspecto real de la portada y representa proporcionalmente la composición actual
+
 #### Scenario: Modificar el tamaño del texto
 
 **GIVEN**  

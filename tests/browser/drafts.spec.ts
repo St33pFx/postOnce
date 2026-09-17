@@ -47,16 +47,31 @@ test("REQ-CP-006: frame selector requires a valid video",async({page,context})=>
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await expect(page.getByRole("button",{name:"Elegir frame del video"})).not.toBeVisible();
 });
-test("REQ-CP-007: uploaded cover can be edited without a video",async({page,context})=>{
+test("REQ-CP-007: portrait composed cover preview preserves aspect ratio",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover-no-video.png",mimeType:"image/png",buffer:image});
   await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});
+  const thumb=await page.locator(".cover-thumb").boundingBox();
+  expect(thumb).not.toBeNull();
+  expect((thumb?.height??0)/(thumb?.width??1)).toBeCloseTo(1.5,1);
   await page.getByRole("button",{name:"Editar portada"}).click();
   await expect(page.getByLabel("Texto de portada")).toBeVisible();
   await page.getByLabel("Texto de portada").fill("Portada sin video");
   await expect(page.locator(".cover-thumb .cover-text")).toHaveText("Portada sin video");
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
+});
+test("REQ-PC-012: YouTube advanced declarations disclose progressively",async({page,context})=>{
+  await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
+  await page.getByLabel("Seleccionar youtube").check();
+  await expect(page.getByLabel("¿Es contenido para niños?")).not.toBeVisible();
+  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).not.toBeVisible();
+  await page.getByRole("button",{name:"Más opciones"}).click();
+  await expect(page.getByLabel("¿Es contenido para niños?")).toBeVisible();
+  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).toBeVisible();
+  await page.getByRole("button",{name:"Menos opciones"}).click();
+  await expect(page.getByLabel("¿Es contenido para niños?")).not.toBeVisible();
+  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).not.toBeVisible();
 });
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
