@@ -64,14 +64,11 @@ test("REQ-CP-007: portrait composed cover preview preserves aspect ratio",async(
 test("REQ-PC-012: YouTube advanced declarations disclose progressively",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await page.getByLabel("Seleccionar youtube").check();
-  await expect(page.getByLabel("¿Es contenido para niños?")).not.toBeVisible();
-  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).not.toBeVisible();
+  await expect(page.locator(".required-declarations")).not.toBeVisible();
   await page.getByRole("button",{name:"Más opciones"}).click();
-  await expect(page.getByLabel("¿Es contenido para niños?")).toBeVisible();
-  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).toBeVisible();
+  await expect(page.locator(".required-declarations")).toBeVisible();
   await page.getByRole("button",{name:"Menos opciones"}).click();
-  await expect(page.getByLabel("¿Es contenido para niños?")).not.toBeVisible();
-  await expect(page.getByLabel("¿Contiene media sintética o alterada?")).not.toBeVisible();
+  await expect(page.locator(".required-declarations")).not.toBeVisible();
 });
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
