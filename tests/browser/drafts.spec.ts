@@ -61,9 +61,9 @@ test("REQ-CP-007: portrait composed cover preview preserves aspect ratio",async(
 test("REQ-PC-012: YouTube advanced declarations disclose progressively",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await page.getByLabel("Seleccionar youtube").check();
-  await expect(page.locator(".required-declarations")).not.toBeVisible();
+  await expect(page.locator(".required-declarations")).toHaveCount(0);
   await page.getByRole("button",{name:"Más opciones"}).click();
-  await expect(page.locator(".required-declarations")).toBeVisible();
+  await expect(page.locator(".required-declarations")).toHaveCount(1);
   await page.getByRole("button",{name:"Menos opciones"}).click();
   await expect(page.locator(".required-declarations")).not.toBeVisible();
 });
