@@ -7,16 +7,16 @@ import { vaultFromEnv } from "../../../../../modules/connections/vault";
 
 export const dynamic = "force-dynamic";
 function safeErrorMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "Unknown OAuth error";
-  return /access[_ -]?token|refresh[_ -]?token|client[_ -]?secret|authorization code|verifier|state|cookie/i.test(message)
-    ? "OAuth callback failed"
-    : message.slice(0, 200);
+  // Only application-defined messages may reach logs; transport/DB errors can contain secrets.
+  const safeMessages = ["Session required", "OAuth state missing", "OAuth state invalid", "Authorization denied",
+    "OAuth unavailable", "Invalid OAuth response", "OAuth provider rejected the request"];
+  return error instanceof Error && safeMessages.includes(error.message) ? error.message : "OAuth callback failed";
 }
 export async function GET(request: Request, context: { params: Promise<{ key: string }> }) {
   const { key: platform } = await context.params;
   const origin = identityServices().origin;
   if (!platforms.includes(platform as Platform)) {
-    console.error("OAuth connection callback failed", { platform, stage: "validate-platform", message: "Unsupported platform" });
+    console.error("OAuth connection callback failed", { platform: "unknown", stage: "validate-platform", message: "Unsupported platform" });
     return Response.redirect(new URL("/account?connection=error", origin));
   }
   const platformName = platform as Platform, url = new URL(request.url), cookieJar = await cookies(), cookieName = oauthCookieName(platformName), saved = cookieJar.get(cookieName)?.value;
@@ -26,6 +26,7 @@ export async function GET(request: Request, context: { params: Promise<{ key: st
     const user = await currentUser(request.headers); if (!user) throw new Error("Session required");
     stage = "state";
     const verifier = consumeOAuthState(saved, url.searchParams.get("state") ?? "", platformName, user.id), code = url.searchParams.get("code");
+    stage = "authorization";
     if (!code || url.searchParams.get("error")) throw new Error("Authorization denied");
     stage = "exchange";
     const grant = await exchange(platformName, code, verifier, `${origin}/api/connections/${platformName}/callback`);

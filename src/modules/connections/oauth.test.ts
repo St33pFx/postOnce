@@ -1,13 +1,20 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createHash } from "node:crypto";
 import { authorizeUrl, consumeOAuthState, createOAuthState, exchange, scopes } from "./oauth";
 
 describe("OAuth connections", () => {
+  afterEach(() => { vi.unstubAllEnvs(); vi.useRealTimers(); });
   it("binds state to the user and rejects tampering, replay context, and expiry", () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "test-oauth-secret");
     const created = createOAuthState("youtube", "user-1");
+    expect(created.challenge).toBe(createHash("sha256").update(created.verifier).digest("base64url"));
     expect(consumeOAuthState(created.value, created.state, "youtube", "user-1")).toBe(created.verifier);
     expect(() => consumeOAuthState(created.value, created.state, "youtube", "user-2")).toThrow("OAuth state invalid");
     expect(() => consumeOAuthState(`${created.value}x`, created.state, "youtube", "user-1")).toThrow("OAuth state invalid");
+    expect(() => consumeOAuthState(created.value, "wrong-state", "youtube", "user-1")).toThrow("OAuth state invalid");
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 11 * 60_000);
+    expect(() => consumeOAuthState(created.value, created.state, "youtube", "user-1")).toThrow("OAuth state invalid");
     vi.unstubAllEnvs();
   });
 
@@ -15,6 +22,7 @@ describe("OAuth connections", () => {
     vi.stubEnv("YOUTUBE_CLIENT_ID", "youtube-client");
     const url = authorizeUrl("youtube", "https://postonce.example/api/connections/youtube/callback", "state", "challenge");
     expect(url.searchParams.get("client_id")).toBe("youtube-client");
+    expect(url.searchParams.get("state")).toBe("state");
     expect(url.searchParams.get("code_challenge")).toBe("challenge");
     expect(url.searchParams.get("scope")).toBe(scopes("youtube").join(" "));
     expect(url.searchParams.get("access_type")).toBe("offline");
