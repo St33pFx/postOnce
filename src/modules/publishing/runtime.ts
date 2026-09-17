@@ -55,8 +55,9 @@ export function productionResolver(db: DB, options: { storage?: ObjectStorage; v
     const wantedCover = config.platform === "instagram" ? config.cover : undefined;
     const wantedThumbnail = config.platform === "youtube" ? config.thumbnail : undefined;
     const kind = (choice: string | undefined) => choice === "uploaded_image" ? "uploaded_image" : choice === "extracted_frame" ? "extracted_frame" : choice === "rendered_cover" ? "rendered_cover" : undefined;
-    const coverRow = rows.find(row => row.status === "ready" && row.kind === kind(wantedCover));
-    const thumbnailRow = rows.find(row => row.status === "ready" && (row.kind === "thumbnail" || row.kind === kind(wantedThumbnail)));
+    const selectedCover = draft.cover?.baseId ? rows.find(row => row.id === draft.cover?.baseId && row.status === "ready") : undefined;
+    const coverRow = wantedCover ? (selectedCover && selectedCover.kind === kind(wantedCover) ? selectedCover : rows.find(row => row.status === "ready" && row.kind === kind(wantedCover))) : undefined;
+    const thumbnailRow = config.platform === "youtube" ? (selectedCover && (!wantedThumbnail || selectedCover.kind === kind(wantedThumbnail)) ? selectedCover : rows.find(row => row.status === "ready" && (row.kind === "thumbnail" || row.kind === kind(wantedThumbnail)))) : undefined;
     return { adapter: adapters[attempt.platform], input: { token: tokens.accessToken, remoteAccountId: connection.remoteAccountId,
       caption: config.platform === "youtube" ? config.descriptionOverride ?? draft.caption ?? "" : config.override ?? draft.caption ?? "",
       config, video: asset(storage, video), cover: coverRow ? asset(storage, coverRow) : undefined },

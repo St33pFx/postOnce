@@ -59,9 +59,9 @@ export async function preflight(db: DB, userId: string, draftId: string, selecte
       }
     }
     const adapter = adapterRegistry[config.platform], capabilities = adapter.capabilities(account);
-    const wantsAsset = config.platform === "tiktok" ? config.cover === "extracted_frame" : config.platform === "instagram" ? !!config.cover : !!config.thumbnail;
-    const assetKind = config.platform === "youtube" ? "thumbnail" : config.platform === "instagram" && config.cover === "uploaded_image" ? "uploaded_image" : "extracted_frame";
-    const [coverAsset] = wantsAsset ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), eq(media.kind, assetKind as typeof media.$inferSelect.kind))) : [];
+    const wantedKind = config.platform === "tiktok" ? config.cover : config.platform === "instagram" ? config.cover : config.thumbnail;
+    const wantsAsset = !!wantedKind || (config.platform === "youtube" && !!draft.cover?.baseId);
+    const [coverAsset] = wantsAsset ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), draft.cover?.baseId ? eq(media.id, draft.cover.baseId) : eq(media.kind, wantedKind as typeof media.$inferSelect.kind))) : [];
     const effective = effectiveConfiguration(draft.caption ?? "", config);
     const input = { caption: effective.text, media: video?.metadata ?? null, account, capabilities, draftId, videoId: draft?.videoId ?? undefined,
       coverAsset: coverAsset ? { id: coverAsset.id, draftId: coverAsset.draftId, status: coverAsset.status, kind: coverAsset.kind, sourceVideoId: coverAsset.recipe?.sourceId } as CoverAsset : undefined };

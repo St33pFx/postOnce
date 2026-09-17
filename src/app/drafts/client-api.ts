@@ -1,7 +1,8 @@
 export async function api<T = unknown>(path:string, method="GET", data?:unknown):Promise<T> {
   const response=await fetch(path,{method,headers:data===undefined?{}:{"Content-Type":"application/json"},body:data===undefined?undefined:JSON.stringify(data),cache:"no-store"});
-  const result=await response.json();
-  if (!response.ok) throw Object.assign(new Error(result.error??"Error de conexión"),{status:response.status});
+  const body=await response.text();
+  const result=body.trim()?JSON.parse(body):undefined;
+  if (!response.ok) throw Object.assign(new Error((result as {error?:string}|undefined)?.error??"Error de conexión"),{status:response.status});
   return result;
 }
 export async function uploadFile(file:File, asset:{id:string;size:number;partSize:number}, onProgress:(bytes:number)=>void, signal:AbortSignal) {

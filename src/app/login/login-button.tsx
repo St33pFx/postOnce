@@ -14,5 +14,5 @@ export function LoginButton() {
     } catch { setError(true); }
     finally { setPending(false); }
   }}>{pending ? "Abriendo Googleâ€¦" : "Continuar con Google"}</button>
-  {error && <p role="alert">No se pudo iniciar sesiÃ³n. Verifica la configuraciÃ³n o intenta de nuevo.</p>}</>;
+  {error && <p role="alert">No se pudo iniciar sesión. Verifica la configuración o intenta de nuevo.</p>}</>;
 }
