@@ -9,7 +9,7 @@ export type OAuthTransport = typeof fetch;
 const scopeMap: Record<Platform, string[]> = {
   instagram: ["instagram_business_basic", "instagram_business_content_publish"],
   tiktok: ["user.info.basic", "video.publish"],
-  youtube: ["https://www.googleapis.com/auth/youtube.upload"],
+  youtube: ["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/youtube.readonly"],
 };
 const cookiePrefix = "postonce-oauth-";
 const enc = (value: Buffer | string) => Buffer.from(value).toString("base64url");
