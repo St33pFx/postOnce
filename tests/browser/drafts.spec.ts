@@ -47,7 +47,7 @@ test("anonymous users cannot open drafts",async({page})=>{await page.goto("/draf
 test("platform selection and preflight show per-destination readiness",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await page.getByLabel("Seleccionar instagram").check();await page.getByLabel("Seleccionar tiktok").check();await page.getByLabel("Seleccionar youtube").check();
-  await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad de YouTube").selectOption("private");
+  await page.getByLabel("Título de YouTube").fill("Título específico");await page.getByLabel("Privacidad").selectOption("private");
   await page.getByRole("button",{name:"Comprobar estado"}).click();
   await expect(page.getByLabel("Resultado global")).toHaveText("Falta completar algunos datos");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
