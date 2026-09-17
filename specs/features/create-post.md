@@ -407,6 +407,20 @@ la aplicación utiliza ese frame como portada
 **AND**  
 muestra una vista previa de la portada seleccionada
 
+#### Scenario: Vista previa completa del video
+
+**GIVEN**  
+el usuario ha cargado un video vertical u horizontal válido
+
+**WHEN**  
+el selector de frame está abierto
+
+**THEN**  
+la vista previa conserva la relación de aspecto del video
+
+**AND**  
+el frame completo es visible sin recorte
+
 #### Scenario: Cambiar el frame seleccionado
 
 **GIVEN**  
@@ -478,6 +492,17 @@ la aplicación actualiza la apariencia del texto
 
 **AND**  
 la vista previa refleja el estilo seleccionado
+
+#### Scenario: Vista previa de la portada compuesta
+
+**GIVEN**  
+el usuario ha configurado una portada válida
+
+**WHEN**  
+agrega o modifica texto, estilo, tamaño o posición
+
+**THEN**  
+la vista previa de la portada seleccionada refleja la composición actual
 
 #### Scenario: Modificar el tamaño del texto
 

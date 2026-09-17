@@ -55,6 +55,10 @@ test("REQ-CP-007: uploaded cover can be edited without a video",async({page,cont
   await page.getByRole("button",{name:"Editar portada"}).click();
   await expect(page.getByLabel("Texto de portada")).toBeVisible();
   await page.getByLabel("Texto de portada").fill("Portada sin video");
+<<<<<<< HEAD
+=======
+  await expect(page.locator(".cover-thumb .cover-text")).toHaveText("Portada sin video");
+>>>>>>> 1d1134b (fix: anchor cover editor requirements)
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
 });
 test("anonymous users cannot open drafts",async({page})=>{await page.goto("/drafts");await expect(page).toHaveURL(/\/login$/);});
@@ -66,3 +70,4 @@ test("platform selection and preflight show per-destination readiness",async({pa
   await expect(page.getByLabel("Resultado global")).toHaveText("Falta completar algunos datos");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });
+
