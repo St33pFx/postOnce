@@ -52,7 +52,7 @@ test("REQ-CP-007: portrait composed cover preview preserves aspect ratio",async(
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover-no-video.png",mimeType:"image/png",buffer:image});
   await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});
-  await expect(page.locator(".cover-thumb")).toHaveAttribute("style", /aspect-ratio: 120 / 180/);
+  await expect(page.locator(".cover-thumb")).toHaveJSProperty("style.aspectRatio", "120 / 180");
   await page.getByRole("button",{name:"Editar portada"}).click();
   await expect(page.getByLabel("Texto de portada")).toBeVisible();
   await page.getByLabel("Texto de portada").fill("Portada sin video");
