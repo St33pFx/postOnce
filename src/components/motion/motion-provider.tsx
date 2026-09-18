@@ -10,7 +10,8 @@ gsap.registerPlugin(ScrollTrigger);
 export function MotionProvider() {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches) return;
+    const hasTouch = navigator.maxTouchPoints > 0;
+    if (reduce.matches || hasTouch) return;
     const ctx = gsap.context(() => {
       const pageReveals = gsap.utils.toArray<HTMLElement>("[data-reveal]");
       if (pageReveals.length) gsap.fromTo(pageReveals, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: .62, ease: "power3.out", stagger: .06, clearProps: "transform" });
@@ -24,7 +25,6 @@ export function MotionProvider() {
     });
     const finePointer = window.matchMedia("(pointer: fine)").matches;
     const canHover = window.matchMedia("(hover: hover)").matches;
-    const hasTouch = navigator.maxTouchPoints > 0;
     const useLenis = finePointer && canHover && !hasTouch;
     const lenis = useLenis ? new Lenis({ autoRaf: false }) : null;
     const onTick = (time: number) => lenis?.raf(time * 1000);
