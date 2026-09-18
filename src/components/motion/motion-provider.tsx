@@ -23,7 +23,10 @@ export function MotionProvider() {
       });
     });
     const finePointer = window.matchMedia("(pointer: fine)").matches;
-    const lenis = finePointer ? new Lenis({ autoRaf: false }) : null;
+    const canHover = window.matchMedia("(hover: hover)").matches;
+    const hasTouch = navigator.maxTouchPoints > 0;
+    const useLenis = finePointer && canHover && !hasTouch;
+    const lenis = useLenis ? new Lenis({ autoRaf: false }) : null;
     const onTick = (time: number) => lenis?.raf(time * 1000);
     if (lenis) { gsap.ticker.add(onTick); gsap.ticker.lagSmoothing(1000, 16); }
     return () => { if (lenis) gsap.ticker.remove(onTick); ctx.revert(); lenis?.destroy(); };
