@@ -21,6 +21,23 @@ async function session(context:BrowserContext){
     await context.addCookies([cookie]);return cookie;
   }finally{await pool.end();}
 }
+async function mobileDeleteDiagnostic(page:import("@playwright/test").Page,label:string){
+  const result=await page.evaluate(()=>{
+    const footer=document.querySelector(".editor-footer");
+    const danger=document.querySelector(".danger-zone");
+    const button=Array.from(document.querySelectorAll("button")).find(el=>el.textContent?.includes("Eliminar draft y media"));
+    if(!(footer instanceof HTMLElement)||!(danger instanceof HTMLElement)||!(button instanceof HTMLElement))return{error:"required element missing",footerFound:!!footer,dangerFound:!!danger,buttonFound:!!button};
+    function info(el:HTMLElement){
+      const rect=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return{tag:el.tagName,className:el.className,rect:{top:rect.top,bottom:rect.bottom,left:rect.left,right:rect.right,width:rect.width,height:rect.height},style:{display:style.display,position:style.position,zIndex:style.zIndex,transform:style.transform,overflow:style.overflow,overflowX:style.overflowX,overflowY:style.overflowY,contain:style.contain,marginTop:style.marginTop,marginBottom:style.marginBottom,paddingTop:style.paddingTop,paddingBottom:style.paddingBottom,pointerEvents:style.pointerEvents}};
+    }
+    const footerRect=footer.getBoundingClientRect(),dangerRect=danger.getBoundingClientRect(),buttonRect=button.getBoundingClientRect(),center={x:buttonRect.left+buttonRect.width/2,y:buttonRect.top+buttonRect.height/2};
+    const hit=document.elementFromPoint(center.x,center.y),hitPath=[] as Array<{tag:string,id:string,className:string,text:string}>;let current=hit;
+    for(let i=0;current&&i<6;i++){hitPath.push({tag:current.tagName,id:current.id||"",className:current instanceof HTMLElement?current.className:"",text:current instanceof HTMLElement?current.textContent?.trim().slice(0,120)||"":""});current=current.parentElement;}
+    return{viewport:{innerWidth:window.innerWidth,innerHeight:window.innerHeight,scrollX:window.scrollX,scrollY:window.scrollY,documentHeight:document.documentElement.scrollHeight,bodyHeight:document.body.scrollHeight,devicePixelRatio:window.devicePixelRatio},footer:info(footer),danger:info(danger),button:info(button),center,hitPath,relations:{footerBottom:footerRect.bottom,dangerTop:dangerRect.top,dangerBottom:dangerRect.bottom,buttonTop:buttonRect.top,buttonBottom:buttonRect.bottom,footerOverlapsDanger:footerRect.bottom>dangerRect.top,footerOverlapsButton:footerRect.bottom>buttonRect.top&&footerRect.top<buttonRect.bottom,buttonInsideDanger:buttonRect.top>=dangerRect.top&&buttonRect.bottom<=dangerRect.bottom,buttonCenterInsideFooter:center.x>=footerRect.left&&center.x<=footerRect.right&&center.y>=footerRect.top&&center.y<=footerRect.bottom,buttonCenterInsideDanger:center.x>=dangerRect.left&&center.x<=dangerRect.right&&center.y>=dangerRect.top&&center.y<=dangerRect.bottom}};
+  });
+  console.log(`${label}=${JSON.stringify(result)}`);
+}
 test.beforeAll(async()=>{
   const storage=storageFromEnv();await storage.client.send(new PutBucketCorsCommand({Bucket:storage.bucket,CORSConfiguration:{CORSRules:[{
     AllowedOrigins:["http://127.0.0.1:3301"],AllowedMethods:["GET","PUT","HEAD"],AllowedHeaders:["*"],ExposeHeaders:["ETag"],
@@ -33,7 +50,11 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   const other=await browser.newContext();await other.addCookies([cookie]);const second=await other.newPage();await second.goto("/drafts");await second.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();
   await caption.fill("Primera edición");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
   await second.getByLabel("Caption general").fill("Segunda edición en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versión");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda edición en conflicto");await other.close();
-  page.once("dialog",d=>d.accept());await page.getByRole("button",{name:"Eliminar draft y media"}).click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
+  const deleteButton=page.getByRole("button",{name:"Eliminar draft y media"});
+  await mobileDeleteDiagnostic(page,"POSTONCE_MOBILE_HIT_BEFORE_SCROLL");
+  await deleteButton.scrollIntoViewIfNeeded();
+  await mobileDeleteDiagnostic(page,"POSTONCE_MOBILE_HIT_AFTER_SCROLL");
+  page.once("dialog",d=>d.accept());await deleteButton.click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
 });
 test("REQ-CP-006: frame selector requires a valid video",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
