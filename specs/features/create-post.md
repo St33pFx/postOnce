@@ -37,11 +37,11 @@ La aplicación debe permitir al usuario configurar una portada específica para 
 
 ### REQ-CP-006 — Seleccionar frame como portada
 
-La aplicación debe permitir al usuario seleccionar un frame del video cargado para utilizarlo como portada.
+La aplicación debe permitir al usuario seleccionar un frame del video cargado para utilizarlo como portada, sin editarlo dentro de PostOnce.
 
-### REQ-CP-007 — Mini editor de portada
+### REQ-CP-007 — Mini editor de portada (DEFERRED / OUT OF V1)
 
-La aplicación debe proporcionar un editor básico de portada que permita agregar texto, modificar su estilo y tamaño, cambiar su posición y eliminarlo dentro del área editable de la portada.
+Los escenarios de edición de texto, estilo, tamaño, posición y generación de rendered_cover quedan diferidos fuera de V1. Se conserva este REQ-ID para compatibilidad y futuras versiones.
 
 ### REQ-CP-008 — Selección de plataformas
 
@@ -68,7 +68,7 @@ La aplicación debe permitir al usuario reemplazar el video cargado antes de ini
 - Reemplazar el video invalida cualquier portada generada a partir de frames del video anterior.
 - Reemplazar el video no debe borrar automáticamente captions, plataformas seleccionadas ni configuraciones que no dependan del archivo de video.
 - Las opciones específicas mostradas para una plataforma deben corresponder únicamente a capacidades que la integración pueda ejecutar realmente.
-- Las fuentes de portada disponibles en la V1 son: imagen local compatible o frame del video cargado. El mini editor puede aplicarse sobre una portada válida generada por cualquiera de esas fuentes.
+- Las fuentes de portada disponibles en la V1 son: imagen local compatible o frame del video cargado. PostOnce conserva la imagen o frame sin edición interna.
 
 ## Acceptance Criteria
 
@@ -449,108 +449,9 @@ la aplicación invalida la portada generada desde el video anterior
 **AND**  
 solicita al usuario seleccionar una nueva portada o un nuevo frame
 
-### REQ-CP-007 — Mini editor de portada
+### REQ-CP-007 — Mini editor de portada (DEFERRED / OUT OF V1)
 
-#### Scenario: Agregar texto a la portada
-
-**GIVEN**  
-el usuario ha configurado una portada válida
-
-**WHEN**  
-el usuario agrega un bloque de texto desde el editor de portada
-
-**THEN**  
-la aplicación muestra el texto sobre la portada
-
-**AND**  
-el texto puede ser editado antes de finalizar la configuración
-
-#### Scenario: Cambiar la posición del texto
-
-**GIVEN**  
-la portada contiene un bloque de texto
-
-**WHEN**  
-el usuario desplaza el texto dentro del área editable de la portada
-
-**THEN**  
-la aplicación actualiza su posición
-
-**AND**  
-la vista previa refleja la nueva ubicación
-
-#### Scenario: Cambiar el estilo del texto
-
-**GIVEN**  
-la portada contiene un bloque de texto
-
-**WHEN**  
-el usuario modifica una opción de estilo disponible
-
-**THEN**  
-la aplicación actualiza la apariencia del texto
-
-**AND**  
-la vista previa refleja el estilo seleccionado
-
-#### Scenario: Vista previa de la portada compuesta
-
-**GIVEN**  
-el usuario ha configurado una portada válida
-
-**WHEN**  
-agrega o modifica texto, estilo, tamaño o posición
-
-**THEN**  
-la vista previa de la portada seleccionada refleja la composición actual
-
-**AND**
-la vista previa conserva la relación de aspecto real de la portada y representa proporcionalmente la composición actual
-
-#### Scenario: Usar la composición final como portada
-
-**GIVEN**
-el usuario configuró una portada válida
-
-**AND**
-la portada contiene texto, estilo, tamaño o posición editados
-
-**WHEN**
-la publicación utiliza esa portada en una plataforma compatible
-
-**THEN**
-la portada publicada representa la composición final actual
-
-**AND**
-no utiliza únicamente la imagen base sin las ediciones.
-
-#### Scenario: Modificar el tamaño del texto
-
-**GIVEN**  
-la portada contiene un bloque de texto
-
-**WHEN**  
-el usuario cambia el tamaño del texto
-
-**THEN**  
-la aplicación actualiza su tamaño
-
-**AND**  
-mantiene el texto dentro del área editable de la portada
-
-#### Scenario: Eliminar texto de la portada
-
-**GIVEN**  
-la portada contiene un bloque de texto
-
-**WHEN**  
-el usuario elimina dicho bloque
-
-**THEN**  
-el texto deja de formar parte de la portada
-
-**AND**  
-la imagen base de la portada permanece sin cambios
+Los escenarios de edición de texto, estilo, tamaño, posición y generación de rendered_cover quedan diferidos fuera de V1. Se conserva este REQ-ID para compatibilidad y futuras versiones.
 
 ### REQ-CP-008 — Selección de plataformas
 
@@ -726,6 +627,20 @@ la portada anterior, si existe, permanece sin cambios
 
 **AND**  
 el usuario puede seleccionar otro archivo
+
+#### Scenario: Conservar una imagen de portada terminada
+
+**GIVEN**
+el usuario tiene una imagen de portada terminada
+
+**WHEN**
+la carga en PostOnce
+
+**THEN**
+PostOnce conserva esa imagen sin alterar su contenido
+
+**AND**
+la utiliza únicamente en plataformas donde exista una capacidad compatible.
 
 ### REQ-CP-011 — Reemplazar video
 

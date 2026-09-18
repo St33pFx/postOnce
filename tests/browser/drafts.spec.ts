@@ -33,29 +33,18 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   const other=await browser.newContext();await other.addCookies([cookie]);const second=await other.newPage();await second.goto("/drafts");await second.getByRole("button",{name:/Trabajo confirmado entre dispositivos/}).click();
   await caption.fill("Primera edición");await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
   await second.getByLabel("Caption general").fill("Segunda edición en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versión");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda edición en conflicto");await other.close();
-  const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
-  await page.getByLabel("Subir imagen").setInputFiles({name:"cover.png",mimeType:"image/png",buffer:image});
-  await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});await page.getByRole("button",{name:"Editar portada"}).click();
-  await page.getByLabel("Texto de portada").fill("Una portada");await page.getByLabel("Posición horizontal").fill("0.8");await page.getByRole("combobox",{name:"Estilo"}).selectOption("dark");
-  await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");await page.getByRole("button",{name:"Generar portada renderizada"}).click();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
-  await page.screenshot({path:`test-results/editor-${test.info().project.name}.png`,fullPage:true});
-  await page.getByRole("button",{name:"Eliminar texto"}).click();await expect(page.getByLabel("Texto de portada")).toHaveValue("");
-  await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");page.once("dialog",d=>d.accept());await page.getByRole("button",{name:"Eliminar draft y media"}).click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
+  page.once("dialog",d=>d.accept());await page.getByRole("button",{name:"Eliminar draft y media"}).click();await expect(page.getByLabel("Caption general")).not.toBeVisible();
 });
 test("REQ-CP-006: frame selector requires a valid video",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   await expect(page.getByRole("button",{name:"Elegir frame del video"})).not.toBeVisible();
 });
-test("REQ-CP-007: portrait composed cover preview preserves aspect ratio",async({page,context})=>{
+test("REQ-CP-010: uploaded cover remains unchanged without an editor",async({page,context})=>{
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover-no-video.png",mimeType:"image/png",buffer:image});
-  await expect(page.getByRole("button",{name:"Editar portada"})).toBeVisible({timeout:30_000});
-  await page.getByRole("button",{name:"Editar portada"}).click();
-  await expect(page.getByLabel("Texto de portada")).toBeVisible();
-  await page.getByLabel("Texto de portada").fill("Portada sin video");
-  await expect(page.locator(".cover-thumb .cover-text")).toHaveText("Portada sin video");
+  await expect(page.getByRole("button",{name:"Editar portada"})).toHaveCount(0);
+  await expect(page.locator(".cover-thumb img")).toBeVisible();
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
 });
 test("REQ-PC-012: YouTube advanced declarations disclose progressively",async({page,context})=>{

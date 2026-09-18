@@ -123,7 +123,7 @@ La aplicación debe validar que el título de YouTube no exceda el límite admit
 
 ### REQ-PC-014 — YouTube thumbnail
 
-La aplicación debe permitir usar una miniatura compatible de YouTube, ya sea cargada por el usuario o generada a partir de un frame del video.
+En V1, YouTube Shorts no utiliza automáticamente la portada general ni garantiza una thumbnail personalizada. La configuración histórica puede seguir leyéndose por compatibilidad, pero no participa en preflight ni en publicaciones nuevas.
 
 ### REQ-PC-015 — YouTube Shorts eligibility
 
@@ -444,33 +444,24 @@ la aplicación indica el límite que debe corregirse
 
 ### REQ-PC-014 — YouTube thumbnail
 
-#### Scenario: Frame como thumbnail
+En V1, YouTube Shorts no aplica automáticamente la portada general como thumbnail. La configuración histórica `thumbnail` puede seguir leyéndose para compatibilidad, pero se ignora en publicaciones nuevas.
 
-**GIVEN**  
-el usuario seleccionó un frame del video para YouTube
-
-**WHEN**  
-se prepara la miniatura de YouTube
-
-**THEN**  
-la aplicación puede convertir ese frame en una imagen compatible para utilizarla como thumbnail
-
-#### Scenario: Portada editada como thumbnail de YouTube
+#### Scenario: YouTube publica sin utilizar la portada general
 
 **GIVEN**
-YouTube está seleccionado
+YouTube Shorts está seleccionado
 
 **AND**
-la portada general contiene una composición editada
+el draft tiene una portada general
 
 **WHEN**
-se prepara el thumbnail de YouTube
+se prepara y publica el video
 
 **THEN**
-YouTube recibe la imagen renderizada correspondiente al CoverState actual
+YouTube publica correctamente sin requerir una portada
 
 **AND**
-no recibe el frame o imagen base sin las ediciones.
+no se genera una operación secundaria `youtube_thumbnail`.
 
 ### REQ-PC-015 — YouTube Shorts eligibility
 

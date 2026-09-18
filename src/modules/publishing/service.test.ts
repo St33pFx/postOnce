@@ -28,7 +28,7 @@ class Adapter implements PublishAdapter {
   async reconcile(){return reconciled[this.platform];}
   async secondary(){if(secondaryFails)throw new Error("thumbnail failed");return {remoteId:"thumbnail"};}
 }
-const resolver:PublicationResolver=async id=>{const [row]=await embedded.select().from(platformPublishAttempt).where(eq(platformPublishAttempt.id,id));const config=row.platform==="youtube"?{platform:"youtube" as const,enabled:true,title:"Title",privacy:"private" as const}:row.platform==="tiktok"?{platform:"tiktok" as const,enabled:true,privacy:"SELF_ONLY" as const}:{platform:"instagram" as const,enabled:true};return {adapter:new Adapter(row.platform),input:{token:"test",remoteAccountId:"account",caption:"caption",config,video:{size:1,mime:"video/mp4",stream:async()=>Readable.from("x"),url:async()=>"https://media.test/video"}},...(row.platform==="youtube"?{thumbnail:{size:1,mime:"image/jpeg",stream:async()=>Readable.from("x"),url:async()=>"https://media.test/thumb"}}:{})};};
+const resolver:PublicationResolver=async id=>{const [row]=await embedded.select().from(platformPublishAttempt).where(eq(platformPublishAttempt.id,id));const config=row.platform==="youtube"?{platform:"youtube" as const,enabled:true,title:"Title",privacy:"private" as const}:row.platform==="tiktok"?{platform:"tiktok" as const,enabled:true,privacy:"SELF_ONLY" as const}:{platform:"instagram" as const,enabled:true};return {adapter:new Adapter(row.platform),input:{token:"test",remoteAccountId:"account",caption:"caption",config,video:{size:1,mime:"video/mp4",stream:async()=>Readable.from("x"),url:async()=>"https://media.test/video"}}};};
 const ready=(version=1,selected:Platform[]=["instagram","tiktok","youtube"])=>({results:selected.map(platform=>({platform,status:"Ready",reasons:[],issues:[]})),global:{ready:true,status:"Ready",reasons:[]},draftVersion:version}) as never;
 beforeAll(()=>migrate(embedded,{migrationsFolder:"src/db/migrations"}));afterAll(()=>pg.close());
 beforeEach(()=>{secondaryFails=false;});
@@ -65,11 +65,9 @@ describe("durable publishing orchestration",()=>{
     const persisted=await new PublishingService(db,queue,resolver,async()=>ready(1,["tiktok"])).get(f.user.id,created.id);expect(persisted.attempts.map(a=>a.status)).toEqual(["Failed","Published"]);
     await expect(service.start(f.user.id,f.draft.id)).rejects.toMatchObject({status:409});outcomes.tiktok={status:"Failed",errorCode:"rejected",errorMessage:"Rejected"};
   });
-  it("keeps secondary operations separate and represents thumbnail failure as PublishedWithWarning",async()=>{
+  it("REQ-PC-014: does not enqueue a YouTube thumbnail secondary operation",async()=>{
     const f=await fixture(),queue=new Queue();outcomes.youtube={status:"Published",remoteId:"yt-video"};const service=new PublishingService(db,queue,resolver,async()=>ready(1,["youtube"]));const created=await service.start(f.user.id,f.draft.id);await service.processAttempt(created.attempts[0].id);
-    let view=await service.get(f.user.id,created.id);expect(view.secondaryOperations).toHaveLength(1);expect(queue.secondaries).toEqual([view.secondaryOperations[0].id]);
-    secondaryFails=true;await service.processSecondary(view.secondaryOperations[0].id);view=await service.get(f.user.id,created.id);expect(view.batch.status).toBe("PublishedWithWarning");expect(view.attempts[0].status).toBe("PublishedWithWarning");
-    secondaryFails=false;const retry=await service.retrySecondary(f.user.id,view.secondaryOperations[0].id);expect(retry.attemptNumber).toBe(2);await service.processSecondary(retry.id);view=await service.get(f.user.id,created.id);expect(view.batch.status).toBe("Published");expect(view.secondaryOperations.map(o=>o.status)).toEqual(["Failed","Published"]);outcomes.youtube={status:"UnknownOutcome",errorCode:"lost",errorMessage:"Lost"};
+    const view=await service.get(f.user.id,created.id);expect(view.secondaryOperations).toHaveLength(0);expect(queue.secondaries).toHaveLength(0);outcomes.youtube={status:"UnknownOutcome",errorCode:"lost",errorMessage:"Lost"};
   });
   it("enforces batch ownership for reads and actions",async()=>{
     const owner=await fixture(),other=await fixture(),queue=new Queue(),service=new PublishingService(db,queue,resolver,async()=>ready(1,["tiktok"]));const created=await service.start(owner.user.id,owner.draft.id);

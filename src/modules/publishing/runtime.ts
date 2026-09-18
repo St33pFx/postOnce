@@ -54,10 +54,9 @@ export function productionResolver(db: DB, options: { storage?: ObjectStorage; v
     if (!video) throw new Error("Video no disponible");
     const rows = await db.select().from(media).where(and(eq(media.userId, batch.userId), eq(media.draftId, draft.id))).orderBy(desc(media.createdAt));
     const wantedCover = config.platform === "instagram" ? config.cover : undefined;
-    const wantedThumbnail = config.platform === "youtube" ? config.thumbnail : undefined;
-    const requestedKind = wantedCover ?? wantedThumbnail;
+    const requestedKind = wantedCover;
     const coverRow = wantedCover ? resolvePublishableCover(rows, draft.cover, requestedKind) : undefined;
-    const thumbnailRow = config.platform === "youtube" ? resolvePublishableCover(rows, draft.cover, requestedKind) : undefined;
+    const thumbnailRow = undefined;
     return { adapter: adapters[attempt.platform], input: { token: tokens.accessToken, remoteAccountId: connection.remoteAccountId,
       caption: config.platform === "youtube" ? config.descriptionOverride ?? draft.caption ?? "" : config.override ?? draft.caption ?? "",
       config, video: asset(storage, video), cover: coverRow ? asset(storage, coverRow) : undefined },

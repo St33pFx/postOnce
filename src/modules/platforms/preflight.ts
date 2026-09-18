@@ -61,10 +61,10 @@ export async function preflight(db: DB, userId: string, draftId: string, selecte
     }
     const adapter = adapterRegistry[config.platform], capabilities = adapter.capabilities(account);
     const wantedKind = config.platform === "tiktok" ? config.cover : config.platform === "instagram" ? config.cover : config.thumbnail;
-    const coverRows = draft.cover?.baseId ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), eq(media.status, "ready"))) : [];
-    const resolvedCover = (config.platform === "youtube" || config.platform === "instagram") ? resolvePublishableCover(coverRows, draft.cover, wantedKind) : undefined;
-    if ((config.platform === "youtube" || config.platform === "instagram") && coverNeedsRender(draft.cover) && !resolvedCover) fail("cover_render_required");
-    const [coverAsset] = resolvedCover ? [resolvedCover] : wantedKind ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), draft.cover?.baseId ? eq(media.id, draft.cover.baseId) : eq(media.kind, wantedKind as typeof media.$inferSelect.kind))) : [];
+    const coverRows = config.platform === "instagram" && draft.cover?.baseId ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), eq(media.status, "ready"))) : [];
+    const resolvedCover = config.platform === "instagram" ? resolvePublishableCover(coverRows, draft.cover, wantedKind) : undefined;
+    if (config.platform === "instagram" && coverNeedsRender(draft.cover) && !resolvedCover) fail("cover_render_required");
+    const [coverAsset] = resolvedCover ? [resolvedCover] : config.platform === "youtube" ? [] : wantedKind ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), draft.cover?.baseId ? eq(media.id, draft.cover.baseId) : eq(media.kind, wantedKind as typeof media.$inferSelect.kind))) : [];
     const effective = effectiveConfiguration(draft.caption ?? "", config);
     const input = { caption: effective.text, media: video?.metadata ?? null, account, capabilities, draftId, videoId: draft?.videoId ?? undefined,
       coverAsset: coverAsset ? { id: coverAsset.id, draftId: coverAsset.draftId, status: coverAsset.status, kind: coverAsset.kind, sourceVideoId: coverAsset.recipe?.sourceId } as CoverAsset : undefined };

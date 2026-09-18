@@ -10,12 +10,6 @@ const rows=(recipeCover:CoverState|null=null)=>[
 ];
 
 describe("cover publication resolution",()=>{
-  it("REQ-CP-007: resolves the current composed cover render",()=>{
-    expect(resolvePublishableCover(rows(cover),cover)?.id).toBe(renderedId);
-  });
-  it("REQ-PC-014: YouTube uses rendered_cover instead of extracted_frame",()=>{
-    expect(resolvePublishableCover(rows(cover),cover)?.kind).toBe("rendered_cover");
-  });
   it("REQ-PC-014: rejects a stale render when CoverState changes",()=>{
     const stale={...cover,text:"old"};
     expect(resolvePublishableCover(rows(stale),cover)).toBeUndefined();
