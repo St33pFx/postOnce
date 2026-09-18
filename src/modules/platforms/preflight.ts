@@ -3,7 +3,8 @@ import { connections, draftConnections } from "../../db/connections-schema";
 import { media } from "../../db/media-schema";
 import { drafts } from "../../db/schema";
 import type { DB } from "../drafts/service";
-import { DomainError, uuid } from "../media/model";
+import { coverNeedsRender, DomainError, uuid } from "../media/model";
+import { resolvePublishableCover } from "../media/cover-resolution";
 import { adapterRegistry, globalPreflight, type Preflight, type PlatformConfiguration, type Account, type CoverAsset } from "./contract";
 import { parseConfigurations, effectiveConfiguration } from "./configuration";
 import { createRefreshClient } from "./http";
@@ -60,8 +61,10 @@ export async function preflight(db: DB, userId: string, draftId: string, selecte
     }
     const adapter = adapterRegistry[config.platform], capabilities = adapter.capabilities(account);
     const wantedKind = config.platform === "tiktok" ? config.cover : config.platform === "instagram" ? config.cover : config.thumbnail;
-    const wantsAsset = !!wantedKind || (config.platform === "youtube" && !!draft.cover?.baseId);
-    const [coverAsset] = wantsAsset ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), draft.cover?.baseId ? eq(media.id, draft.cover.baseId) : eq(media.kind, wantedKind as typeof media.$inferSelect.kind))) : [];
+    const coverRows = draft.cover?.baseId ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), eq(media.status, "ready"))) : [];
+    const resolvedCover = (config.platform === "youtube" || config.platform === "instagram") ? resolvePublishableCover(coverRows, draft.cover, wantedKind) : undefined;
+    if ((config.platform === "youtube" || config.platform === "instagram") && coverNeedsRender(draft.cover) && !resolvedCover) fail("cover_render_required");
+    const [coverAsset] = resolvedCover ? [resolvedCover] : wantedKind ? await db.select().from(media).where(and(eq(media.userId, userId), eq(media.draftId, draftId), draft.cover?.baseId ? eq(media.id, draft.cover.baseId) : eq(media.kind, wantedKind as typeof media.$inferSelect.kind))) : [];
     const effective = effectiveConfiguration(draft.caption ?? "", config);
     const input = { caption: effective.text, media: video?.metadata ?? null, account, capabilities, draftId, videoId: draft?.videoId ?? undefined,
       coverAsset: coverAsset ? { id: coverAsset.id, draftId: coverAsset.draftId, status: coverAsset.status, kind: coverAsset.kind, sourceVideoId: coverAsset.recipe?.sourceId } as CoverAsset : undefined };

@@ -1,6 +1,8 @@
 export type CoverState = { baseId: string; text: string; x: number; y: number; size: number; style: "light" | "dark" | "banner" };
 export type MediaMetadata = { width: number; height: number; duration?: number; container?: string; videoCodec?: string; audioCodec?: string };
 export type Recipe = { sourceId: string; seconds?: number; cover?: CoverState };
+export function coverNeedsRender(cover: CoverState | null | undefined) { return !!cover?.text; }
+export function sameCoverState(a: CoverState | null | undefined, b: CoverState | null | undefined) { return !!a && !!b && a.baseId===b.baseId && a.text===b.text && a.x===b.x && a.y===b.y && a.size===b.size && a.style===b.style; }
 export const uuid = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 export class DomainError extends Error {
   constructor(public status: number, message: string) { super(message); }

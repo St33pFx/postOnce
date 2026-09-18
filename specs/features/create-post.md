@@ -507,6 +507,23 @@ la vista previa de la portada seleccionada refleja la composición actual
 **AND**
 la vista previa conserva la relación de aspecto real de la portada y representa proporcionalmente la composición actual
 
+#### Scenario: Usar la composición final como portada
+
+**GIVEN**
+el usuario configuró una portada válida
+
+**AND**
+la portada contiene texto, estilo, tamaño o posición editados
+
+**WHEN**
+la publicación utiliza esa portada en una plataforma compatible
+
+**THEN**
+la portada publicada representa la composición final actual
+
+**AND**
+no utiliza únicamente la imagen base sin las ediciones.
+
 #### Scenario: Modificar el tamaño del texto
 
 **GIVEN**  

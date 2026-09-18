@@ -455,6 +455,23 @@ se prepara la miniatura de YouTube
 **THEN**  
 la aplicación puede convertir ese frame en una imagen compatible para utilizarla como thumbnail
 
+#### Scenario: Portada editada como thumbnail de YouTube
+
+**GIVEN**
+YouTube está seleccionado
+
+**AND**
+la portada general contiene una composición editada
+
+**WHEN**
+se prepara el thumbnail de YouTube
+
+**THEN**
+YouTube recibe la imagen renderizada correspondiente al CoverState actual
+
+**AND**
+no recibe el frame o imagen base sin las ediciones.
+
 ### REQ-PC-015 — YouTube Shorts eligibility
 
 #### Scenario: Video no elegible como Short
