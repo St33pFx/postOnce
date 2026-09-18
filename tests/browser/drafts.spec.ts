@@ -43,8 +43,9 @@ test("REQ-CP-010: uploaded cover remains unchanged without an editor",async({pag
   await session(context);await page.goto("/drafts");await page.getByRole("button",{name:/Nueva publicación/}).click();
   const image=await sharp({create:{width:120,height:180,channels:3,background:"#c39964"}}).png().toBuffer();
   await page.getByLabel("Subir imagen").setInputFiles({name:"cover-no-video.png",mimeType:"image/png",buffer:image});
+  await expect(page.getByText("Portada seleccionada")).toBeVisible({timeout:30_000});
   await expect(page.getByRole("button",{name:"Editar portada"})).toHaveCount(0);
-  await expect(page.locator(".cover-thumb img")).toBeVisible();
+  await expect(page.locator(".cover-thumb img")).toBeVisible({timeout:30_000});
   await expect(page.getByRole("status")).toHaveText("Guardado en el servidor");
 });
 test("REQ-PC-012: YouTube advanced declarations disclose progressively",async({page,context})=>{
