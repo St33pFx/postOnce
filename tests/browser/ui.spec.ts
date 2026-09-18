@@ -16,5 +16,5 @@ test("REQ-UI-010 / REQ-UI-011: reduced motion keeps content immediately availabl
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/login");
   await expect(page.getByRole("heading")).toBeVisible();
-  await expect(page.getByRole("button").first()).toBeVisible();
+  await expect(page.locator(".login-card")).toBeVisible();
 });
