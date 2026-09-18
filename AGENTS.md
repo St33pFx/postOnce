@@ -36,11 +36,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 6. **VALIDATION STRATEGY**
 
-   Ejecutar en orden: test focalizado del requisito, checks del módulo, `npm run check`, `npm run test:browser` completo cuando el cambio focalizado esté verde y CI completo una sola vez al final. Si CI falla, identificar el requisito afectado y corregir únicamente esa regresión.
+   Ejecutar en orden: test focalizado del requisito, checks del módulo, `npm run check` y `git diff --check`. La secuencia de cierre es: SPEC anchor → implementación → validación local focalizada → `npm run check` → checks de diff → commit → push → STOP. Después de un push no consultar ni esperar GitHub Actions; el usuario verifica CI por separado.
 
 7. **COMPLETION**
 
-   Una tarea requiere anchor identificado, Acceptance Criteria satisfecho, test de regresión, checks verdes y CI SUCCESS.
+   Una tarea requiere anchor identificado, Acceptance Criteria satisfecho, test de regresión cuando corresponda y checks locales verdes. Tras un commit y push exitosos, detenerse inmediatamente. No pollar GitHub Actions, esperar workflows, inspeccionar Actions ni reintentar por CI pendiente.
+
+   El reporte de cierre debe indicar: `IMPLEMENTATION PUSHED: YES`, tests locales focalizados, `npm run check: PASS`, SHA del commit, `push: SUCCESS`, `working tree: clean` y `CI: NOT CHECKED — user will verify separately`.
 
 8. **PROMPT BEHAVIOR**
 
