@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { MotionProvider } from "../components/motion/motion-provider";
 
 export const metadata: Metadata = {
   title: "PostOnce — Cimientos",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:`(()=>{try{const t=localStorage.getItem('postonce-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}})()`}} /></head><body>{children}</body></html>;
+  return <html lang="es" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:`(()=>{try{const t=localStorage.getItem('postonce-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}})()`}} /></head><body><MotionProvider/>{children}</body></html>;
 }

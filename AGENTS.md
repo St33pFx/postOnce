@@ -14,7 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
    Orden de autoridad:
 
-   `specs/constitution.md` → `specs/product.md` → `specs/features/*.md` → `specs/architecture.md` → `specs/implementation-plan.md` → implementación → tests.
+   `specs/constitution.md` → `specs/product.md` → `specs/features/*.md` → `specs/ui.md` → `specs/architecture.md` → `specs/implementation-plan.md` → implementación → tests.
 
    El código no redefine silenciosamente el comportamiento especificado.
 
@@ -45,3 +45,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 8. **PROMPT BEHAVIOR**
 
    Los prompts pueden ser pequeños; el agente debe reconstruir el contexto leyendo las specs indicadas.
+
+9. **USER-FACING UI WORK**
+
+   Toda tarea de UI debe identificar el REQ-ID funcional aplicable y el REQ-UI-ID correspondiente de `specs/ui.md`. Las specs funcionales controlan qué ocurre; la spec UI controla cómo se presenta y anima. La implementación nunca redefine silenciosamente el comportamiento del producto.

@@ -14,7 +14,7 @@ export function PublishingPanel({draftId,save}:{draftId:string;save:()=>Promise<
   useEffect(()=>{let live=true;const load=async()=>{try{const next=await api<View|null>(`/api/drafts/${draftId}/publish`);if(live)setView(next);}catch(e){if(live)setError((e as Error).message);}};void load();const timer=setInterval(()=>void load(),3000);return()=>{live=false;clearInterval(timer);};},[draftId]);
   async function action(work:()=>Promise<unknown>){setBusy(true);setError("");try{await work();await refresh();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
   const latest=new Map<string,Attempt>();for(const attempt of view?.attempts??[])latest.set(attempt.platform,attempt);
-  return <section aria-label="Publicación durable"><h2>Publicación</h2>
+  return <section className="editor-section publishing" data-section-reveal aria-label="Publicación durable"><div className="section-heading"><div><p className="eyebrow">04</p><h2>Publicación</h2></div></div>
     <p>El servidor repite el preflight al iniciar. El worker continúa aunque cierres el navegador.</p>
     <button type="button" disabled={busy||view?.batch.status==="Pending"||view?.batch.status==="Publishing"} onClick={()=>void action(async()=>{await save();setView(await api<View>(`/api/drafts/${draftId}/publish`,"POST",{}));})}>Publicar destinos Ready</button>
     {view&&<div aria-live="polite"><p><strong>Batch: {labels[view.batch.status]}</strong></p><div className="publish-grid">
