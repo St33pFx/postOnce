@@ -56,6 +56,15 @@ export class PublishingService {
   }
 
   async retry(userId: string, attemptId: string) {
+    const [candidate] = await this.db.select({ attempt: platformPublishAttempt, batch: publishBatch }).from(platformPublishAttempt)
+      .innerJoin(publishBatch, eq(publishBatch.id, platformPublishAttempt.batchId))
+      .where(and(eq(platformPublishAttempt.id, attemptId), eq(publishBatch.userId, userId)));
+    if (!candidate) throw new DomainError(404, "Attempt no disponible");
+    const checked = await this.runPreflight(userId, candidate.batch.draftId);
+    const destination = checked.results.find(result => result.platform === candidate.attempt.platform);
+    if (checked.draftVersion !== candidate.batch.draftVersion || !destination || destination.status !== "Ready") {
+      throw new DomainError(409, "La plataforma no está Ready después del preflight");
+    }
     return this.db.transaction(async tx => {
       await tx.select().from(postonceUsers).where(eq(postonceUsers.id, userId)).for("update");
       const [attempt] = await tx.select({ attempt: platformPublishAttempt, batch: publishBatch }).from(platformPublishAttempt)

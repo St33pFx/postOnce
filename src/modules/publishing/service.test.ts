@@ -65,6 +65,12 @@ describe("durable publishing orchestration",()=>{
     const persisted=await new PublishingService(db,queue,resolver,async()=>ready(1,["tiktok"])).get(f.user.id,created.id);expect(persisted.attempts.map(a=>a.status)).toEqual(["Failed","Published"]);
     await expect(service.start(f.user.id,f.draft.id)).rejects.toMatchObject({status:409});outcomes.tiktok={status:"Failed",errorCode:"rejected",errorMessage:"Rejected"};
   });
+  it("REQ-PUB-008 / REQ-PUB-009: reruns preflight before an individual retry",async()=>{
+    const f=await fixture(),queue=new Queue(),run=vi.fn(async()=>ready(1,["tiktok"])),service=new PublishingService(db,queue,resolver,run);
+    const created=await service.start(f.user.id,f.draft.id),attempt=created.attempts[0];await service.processAttempt(attempt.id);
+    run.mockResolvedValueOnce({results:[{platform:"tiktok",status:"NotReady",reasons:["expired"],issues:[]}],global:{ready:false,status:"NotReady",reasons:["expired"]},draftVersion:1} as never);
+    await expect(service.retry(f.user.id,attempt.id)).rejects.toMatchObject({status:409});expect(run).toHaveBeenCalledTimes(2);
+  });
   it("REQ-PC-014: does not enqueue a YouTube thumbnail secondary operation",async()=>{
     const f=await fixture(),queue=new Queue();outcomes.youtube={status:"Published",remoteId:"yt-video"};const service=new PublishingService(db,queue,resolver,async()=>ready(1,["youtube"]));const created=await service.start(f.user.id,f.draft.id);await service.processAttempt(created.attempts[0].id);
     const view=await service.get(f.user.id,created.id);expect(view.secondaryOperations).toHaveLength(0);expect(queue.secondaries).toHaveLength(0);outcomes.youtube={status:"UnknownOutcome",errorCode:"lost",errorMessage:"Lost"};
