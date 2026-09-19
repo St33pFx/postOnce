@@ -43,7 +43,7 @@ jobs:
       - name: Verify SeaweedFS
         run: "$WEED_PATH version"
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - run: npm run test:browser
       # Known moderate esbuild development-server advisory is documented in docs/phase-2-setup.md.
       - run: npm audit --omit=dev --audit-level=high
