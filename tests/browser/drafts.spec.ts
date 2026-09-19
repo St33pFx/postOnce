@@ -35,6 +35,7 @@ test("draft autosave, recovery, conflicts and touch-compatible media editor",asy
   await second.getByLabel("Caption general").fill("Segunda edición en conflicto");await expect(second.getByRole("status")).toHaveText("Conflicto: existe otra versión");await expect(second.getByLabel("Caption general")).toHaveValue("Segunda edición en conflicto");await other.close();
   const deleteButton=page.getByRole("button",{name:"Eliminar draft y media"});
   page.once("dialog",d=>d.accept());
+  await deleteButton.scrollIntoViewIfNeeded();
   const hasTouch=await page.evaluate(()=>navigator.maxTouchPoints>0);
   if(hasTouch)await deleteButton.tap();else await deleteButton.click();
   await expect(page.getByLabel("Caption general")).not.toBeVisible();
