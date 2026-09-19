@@ -7,7 +7,6 @@ import { createAuth } from "../../src/modules/auth/factory";
 import { authConfig } from "../../src/config/auth";
 import { PutBucketCorsCommand } from "@aws-sdk/client-s3";
 import { storageFromEnv } from "../../src/modules/media/storage";
-import { logHorizontalOverflow } from "./overflow-diagnostic";
 
 async function session(context:BrowserContext){
   if(!process.env.TEST_DATABASE_URL||process.env.NODE_ENV!=="development")throw new Error("Test-only fixture configuration required");
@@ -85,7 +84,6 @@ test("platform selection and preflight show per-destination readiness",async({pa
   await youtube.getByLabel("Título de YouTube").fill("Título específico");await youtube.getByLabel("Privacidad").selectOption("private");
   await page.getByRole("button",{name:"Comprobar estado"}).click();
   await expect(page.getByLabel("Resultado global")).toHaveText("Falta completar algunos datos");
-  await logHorizontalOverflow(page, "DRAFTS");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });
 

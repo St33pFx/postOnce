@@ -7,7 +7,6 @@ import { authConfig } from "../../src/config/auth";
 import { domainUser } from "../../src/modules/users/identity";
 import { drafts } from "../../src/db/schema";
 import { platformPublishAttempt, publishBatch, secondaryOperation } from "../../src/db/publishing-schema";
-import { logHorizontalOverflow } from "./overflow-diagnostic";
 
 async function fixture(context:BrowserContext){
   const {db,pool}=createConnection();
@@ -39,7 +38,6 @@ test("durable publishing history survives reload and exposes only individual ret
   await expect(page.getByRole("button",{name:"Retry tiktok"})).toBeVisible();await expect(page.getByRole("button",{name:"Retry thumbnail"})).toBeVisible();
   await expect(page.getByRole("button",{name:/Retry All/i})).toHaveCount(0);
   await page.reload();await page.getByRole("button",{name:/Historial durable/}).click();await expect(page.getByText("Batch: Publicado con advertencia")).toBeVisible();
-  await logHorizontalOverflow(page, "PUBLISHING");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.getByRole("button",{name:"Retry tiktok"}).click();await expect(page.getByLabel("Publicación tiktok")).toContainText("Pendiente · intento 2");
   await expect(page.getByLabel("Publicación instagram")).toContainText("Referencia remota: ig-published");
