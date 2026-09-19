@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { logHorizontalOverflow } from "./overflow-diagnostic";
 
 test("REQ-UI-008: login has no horizontal overflow on supported mobile width", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByRole("heading")).toBeVisible();
-  await logHorizontalOverflow(page, "LOGIN");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
