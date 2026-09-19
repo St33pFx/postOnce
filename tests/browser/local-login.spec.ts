@@ -15,8 +15,12 @@ test("local login emits a real persistent session without Google OAuth", async (
   await page.getByRole("button", { name: "Entrar en modo local" }).click();
   const response = await login;
   expect(response.status()).toBe(303);
-  expect(await response.headerValue("set-cookie")).toMatch(/better-auth\.session_token=.+;.*HttpOnly/i);
   await expect(page).toHaveURL(/\/drafts$/);
+  const cookiesAfterLogin = await context.cookies();
+  const sessionAfterLogin = cookiesAfterLogin.find(c => c.name === "better-auth.session_token");
+  expect(sessionAfterLogin).toBeTruthy();
+  expect(sessionAfterLogin?.httpOnly).toBe(true);
+  expect(sessionAfterLogin?.sameSite).toBe("Lax");
   expect((await page.reload())?.status()).toBe(200);
   expect((await page.goto("/account"))?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Tu cuenta de PostOnce" })).toBeVisible();
